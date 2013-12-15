@@ -45,3 +45,10 @@ end
 # gem 'debugger', group: [:development, :test]
 
 gem "railties", ">= 0"
+
+group :production do
+
+  # heroku integration gem
+  gem 'rails_12factor'
+
+end
