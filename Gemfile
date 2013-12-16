@@ -53,6 +53,19 @@ end
 
 group :development do
 
+  # gem for creating fake database entries
+  gem 'faker', '1.2.0'
+
+  # gem for displaying better erros
+  gem 'better_errors', '1.0.1'
+
+  # gem for displaying additional information for better errors
+  gem 'binding_of_caller', '0.7.2'
+
+  # gem for use in combination with rails panel in chrome
+  gem 'meta_request', '0.2.8'
+
+  # database for developing
   gem 'sqlite3'
 
 end
