@@ -18,4 +18,7 @@
 //= require turbolinks
 //= require_self
 
-$(function(){ $(document).foundation(); });
+$(document).ready(function()
+{
+    $(document).foundation();
+});
