@@ -1,3 +1,9 @@
+rule0:
+
+  "Wat is de temperatuur?"
+
+    text: temperature
+
 
 # name of the rule, can be omitted
 rule1:
@@ -44,12 +50,10 @@ rule2:
 
   # if all of the conditions here matches, the rule is applicable
   all:
-    - same(:chocolat, :soda)
+    - equals(:chocolat, :soda)
     - diff(:chocolat, :soda)
     - greater(:temperature, 16)
     - less(:temperature, 10)
-    - has(:chocolat)
-    - neg(:chocolat)
 
   # ask the question
   "Ben je het eens met de stelling?":
@@ -62,6 +66,7 @@ rule2:
 
 
 # goal is simply a rule without another question(s)
+# but only called when no other rule can be called
 goal1:
   condition:
       all:
