@@ -25,7 +25,8 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 1.2'
 
 # foundation layout framework
-gem 'foundation-rails'
+# current version of the foundation gem doesn't work with rails / turbolinks
+# gem 'foundation-rails'
 
 # ruleby rule engine
 gem 'ruleby'
