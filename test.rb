@@ -4,7 +4,7 @@ class Rule
 
   def initialize(name)
 
-    self.name      = name
+    self.name      = name.to_sym
     self.questions = Array.new
 
   end
@@ -87,9 +87,14 @@ class KnowledgeBase < Ruleby::Rulebook
     matcher_type = matcher.type
 
     # generate the ruleby conditions based on the matcher conditions
-    conditions   = generate_conditions matcher.conditions
+    conditions   = create_conditions matcher.conditions
 
-    #puts conditions.inspect
+    # star to convert array to arguments
+    rule *conditions do |v|
+
+      puts 'TRIGGERED!!'
+
+    end
 
     # switch statement for the matcher type
     case matcher.type
@@ -105,29 +110,6 @@ class KnowledgeBase < Ruleby::Rulebook
 
     end
 
-
-    #rule [Fact, :f_1, m.name == 'something', {m.value => :f_1_value}],
-    #     [Fact, :f_2, m.name == 'else', m.value >= b(:f_1_value)] do |v|
-    #
-    #  #puts v.inspect
-    #
-    #end
-
-
-    rule [Fact, :f, krek(:==)] do |v|
-
-      puts 'SHINE'
-
-    end
-
-  end
-
-  def krek(operator)
-
-    case operator
-      when :==
-        m.name == 'test'
-    end
   end
 
   # call this function to get all the possible rules
@@ -141,40 +123,70 @@ class KnowledgeBase < Ruleby::Rulebook
 
   private
 
-  def generate_conditions conditions
+  def create_conditions(conditions)
 
-    conditions.map { |condition|
+    conditions.map { |item| create_condition item }
 
-      var1     = condition[0]
-      var2     = condition[2]
-      operator = condition[1]
+  end
 
-      if is_fact?(var1) && is_fact?(var2)
+  def create_condition(item)
 
-        return [
-            [Fact, :f1, m.name == var1, {m.value => :f1_value}],
-            [Fact, :f2, m.name >= var2, m.value == b(:f1_value)]
-        ]
+    var1     = item[0]
+    var2     = item[2]
+    operator = item[1]
 
-      end
+    if is_fact?(var1) && is_fact?(var2)
 
-      if is_fact?(var1) && !is_fact?(var2)
+      return [
+          [Fact, :f1, m.name == var1, {m.value => :f1_value}],
+          [Fact, :f2, m.name == var2, operation(m.value, operator, b(:f1_value))]
+      ]
 
-      end
+    end
 
-      if !is_fact?(var1) && is_fact?(var2)
+    if is_fact?(var1) && !is_fact?(var2)
 
-      end
+      return [Fact, :f1, m.name == var1, m.value == var2]
 
-      raise "There is no fact name in: #{var1} #{operator} #{var2}"
+    end
 
-    }
+    if !is_fact?(var1) && is_fact?(var2)
+
+      return [Fact, :f1, m.name == var2, m.value == var1]
+
+    end
+
+    raise "There is no fact name in: #{var1} #{operator} #{var2}"
+
+  end
+
+  def operation(var1, operator, var2)
+
+    case operator
+      when :==
+        var1 == var2
+      when :>
+        var1 > var2
+      when :<
+        var1 < var2
+      else
+        raise "Unknown operator #{operator}"
+
+    end
 
   end
 
   def is_fact? variable
 
-    true
+    # only works on strings
+    if variable.is_a? String
+
+        return variable[0] == ':'
+
+    end
+
+    # otherwise return false
+    false
 
   end
 
@@ -205,7 +217,7 @@ class RuleParser
       # create a new condition object
       matcher = Matcher.new :all
 
-      # fact :something equals 1
+      # fact :something == 1
       matcher.equals ':something', '1'
 
       # set the condition on the rule
@@ -227,26 +239,7 @@ k = KnowledgeBase.new
 RuleParser.yml("#{Rails::root}/rules.yml", k)
 
 # add all the facts known (passed in the form)
-#k.assert Fact.new
-
-
-k.assert Fact.new 'something', '11'
-k.assert Fact.new 'else', '12'
-k.assert Fact.new 'test', '12'
-
+k.assert Fact.new ':something', '1'
 
 # get all the possible rules based on known facts and rules
 rules = k.possible_rules
-
-# print the known rules
-puts rules.inspect
-
-
-
-
-
-
-
-
-
-
