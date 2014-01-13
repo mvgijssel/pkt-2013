@@ -1,34 +1,21 @@
 class PagesController < ApplicationController
 
-  def test
-
-
-
-  end
-
   def home
 
+    # instantiate the knowledge base
+    k = PKT::KnowledgeBase.new
 
+    # parse the yml file and create rules in the knowledge base
+    PKT::RuleParser.yml("#{Rails::root}/rules.yml", k)
 
-    # solve returns the next question
-    question = KnowledgeBase::Solver.solve(params, cookies)
+    # add all the facts known (passed in the form)
+    # TODO: implement fact assertion
 
-    # there are no more questions, render the goal page
-    if question.nil?
+    # get all the possible rules based on known facts and rules
+    rules = k.possible_rules
 
-      @station1 = KnowledgeBase::Questions.instance.station1
-      @station2 = KnowledgeBase::Questions.instance.station2
-      @station3 = KnowledgeBase::Questions.instance.station3
-
-      render('questions/goal')
-
-    else
-
-      @description = question.description
-
-      render(question.view)
-
-    end
+    # get the first rule and render
+    render :question, :rule => rules.first
 
   end
 
