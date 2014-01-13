@@ -53,8 +53,6 @@ class PagesController < ApplicationController
       # get the goals
       @goals = k.goals
 
-
-
       # render the goal view
       render :goal
 

@@ -1,8 +1,17 @@
 <h1>Oplossing</h1>
 <hr/>
 
-<% @goals.each do |goal| %>
+<% if @goals.count > 0 %>
 
-    <p><%= goal.goal %></p>
+    <% @goals.each do |goal| %>
+
+        <p><%= goal.goal %></p>
+
+    <% end %>
+
+
+<% else %>
+
+    <p>Alle mogelijke regels zijn al behandeld en geen enkel doel past bij de huidige feiten met hun waarden.</p>
 
 <% end %>
