@@ -1,0 +1,10 @@
+<% answer.options.each do |fact_name, label| %>
+
+
+    <%= check_box 'checkbox', fact_name %>
+
+    <!--TODO: fix label tag, doesn't work-->
+    <%= label_tag("checkbox#{fact_name}", label) %>
+    <br />
+
+<% end %>

@@ -2,13 +2,12 @@ module PKT
 
   class Rule
 
-    attr_accessor :name, :questions, :is_goal
+    attr_accessor :name, :questions, :goal
 
-    def initialize(name, is_goal = false)
+    def initialize(name)
 
       self.name      = name.to_sym
       self.questions = Array.new
-      self.is_goal   = is_goal
 
     end
 
@@ -60,6 +59,13 @@ module PKT
 
   class Answer
 
+    def template
+
+      # TODO: implement better method of handling rendering the questions / answers
+      template = self.class.to_s.underscore
+
+    end
+
   end
 
   class TextAnswer < Answer
@@ -76,8 +82,18 @@ module PKT
 
   class RadioAnswer < Answer
 
+    attr_accessor :fact_name, :options
+
     def initialize (content)
 
+      content.each do |name, value|
+
+        # todo: implement proper handling of the content
+
+        @fact_name = name
+        @options   = value
+
+      end
 
     end
 
@@ -85,7 +101,11 @@ module PKT
 
   class CheckboxAnswer < Answer
 
+    attr_accessor :options
+
     def initialize (content)
+
+      @options = content
 
     end
 
@@ -150,14 +170,11 @@ module PKT
 
       case
 
+        # TODO: replace when with if statement
         when rule_object.matcher.nil?
 
           # rule can be fired directly
           @possible_rules << rule_object
-
-        when rule_object.is_goal
-
-          # TODO: implement goal
 
         else
 
@@ -176,20 +193,30 @@ module PKT
 
             when :all # all the conditions must match
 
+              # star to convert array to arguments
+              rule AND *conditions do |v|
+
+                # when rule is applicable, add to possible rules
+                @possible_rules << rule_object
+
+              end
+
             when :any # one of the conditions must match
+
+              # star to convert array to arguments
+              rule OR *conditions do |v|
+
+                # when rule is applicable, add to possible rules
+                @possible_rules << rule_object
+
+              end
 
             else
               raise "Unknown matcher type #{matcher.type}"
 
           end
 
-          # star to convert array to arguments
-          rule *conditions do |v|
 
-            # when rule is applicable, add to possible rules
-            @possible_rules << rule_object
-
-          end
 
       end
 
@@ -202,8 +229,15 @@ module PKT
       # start the matching of the engine
       @engine.match
 
-      # return the possible rules
-      @possible_rules
+      # reject all rules that ARE goals
+      @possible_rules.reject { |rule| !rule.goal.nil? }
+
+    end
+
+    def goals
+
+      # reject all the rules that are NOT goals
+      @possible_rules.reject { |rule| rule.goal.nil? }
 
     end
 
@@ -217,28 +251,28 @@ module PKT
 
     def create_condition(item)
 
-      var1     = item[0]
-      var2     = item[2]
+      var1     = convert_variable(item[0])
+      var2     = convert_variable(item[2])
       operator = item[1]
 
       if is_fact?(var1) && is_fact?(var2)
 
-        return [
+        return [ AND(
             [Fact, :f1, m.name == var1, {m.value => :f1_value}],
             [Fact, :f2, m.name == var2, operation(m.value, operator, b(:f1_value))]
-        ]
+                 )]
 
       end
 
       if is_fact?(var1) && !is_fact?(var2)
 
-        return [Fact, :f1, m.name == var1, m.value == var2]
+        return [Fact, :f1, m.name == var1, operation(m.value, operator, var2)]
 
       end
 
       if !is_fact?(var1) && is_fact?(var2)
 
-        return [Fact, :f1, m.name == var2, m.value == var1]
+        return [Fact, :f1, m.name == var2, operation(m.value, operator, var1)]
 
       end
 
@@ -273,6 +307,21 @@ module PKT
 
       # otherwise return false
       false
+
+    end
+
+    def convert_variable var
+
+      # if it returns nil, it is a string
+      if /^[0-9]+$/.match(var).nil?
+
+        var
+
+      else # otherwise it is a integer
+
+        var.to_i
+
+      end
 
     end
 
@@ -331,7 +380,8 @@ module PKT
 
               when name == 'goal' # it's a goal -> can't contain questions AND facts
 
-                # TODO: implement goal handling
+                # fill in the goal variable
+                rule.goal = value
 
               when name[0] == '$' # it's a fact
 
@@ -386,7 +436,6 @@ module PKT
           when 'any'
           when 'all'
 
-
         end
 
       end
@@ -432,3 +481,9 @@ module PKT
   end
 
 end
+
+#k = PKT::KnowledgeBase.new
+#
+#PKT::RuleParser.yml("#{Rails.root}/rules.yml", k)
+#
+#k.possible_rules[0].questions[0].answer.template

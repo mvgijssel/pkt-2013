@@ -166,9 +166,9 @@ rule9:
 goal7:
   all:
     - equals($situation, 2)
-    - equals($Old, false)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
     - equals($compNodig, 1)
     - equals($Alk, 1)
 
@@ -177,9 +177,9 @@ goal7:
 goal8:
   all:
     - equals($situation, 2)
-    - equals($Old, false)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
     - equals($Alk, 0)
     - equals($compGrootte, 1)
 
@@ -188,9 +188,9 @@ goal8:
 goal9:
   all:
     - equals($situation, 2)
-    - equals($Old, false)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
     - equals($Alk, 0)
     - equals($compGrootte, 2)
 
@@ -239,9 +239,9 @@ goal11:
   all:
     - equals($situation, 3)
     - less($drukAbb, 49)
-    - equals($Old, true)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 1)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
 
   goal: "Zet Wieringermeer aan."
 
@@ -249,9 +249,9 @@ goal12:
   all:
     - equals($situation, 3)
     - less($drukAbb, 49)
-    - equals($Old, false)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
 
   goal: "Zet Oldenboorn aan."
 
@@ -336,9 +336,9 @@ goal16:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
-    - equals($Old, true)
-    - equals($Wie, false)
-    - equals($Bev, false)
+    - equals($Old, 1)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
 
   goal: "Zet Oldenboorn uit en Wieringermeer aan."
 
@@ -346,9 +346,9 @@ goal17:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
-    - equals($Old, false)
-    - equals($Wie, false)
-    - equals($Bev, true)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 1)
 
   goal: "Zet Beverwijk uit en Wieringermeer aan."
 

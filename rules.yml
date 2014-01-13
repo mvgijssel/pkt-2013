@@ -1,28 +1,15 @@
-rule0:
-  "hallo wereld!":
-    radio:
-      $location:
-        0: Groningen
-        1: leeuwarden
-
 rule1:
+
+  "Test":
+    checkbox:
+      $location: location
+      $temp: temperature
+
+rule2:
 
   all:
     - equals($location, 1)
+    - equals($temp, 1)
 
-  "Wat is de temperatuur?":
-    text: $temp
-
-goal1:
-
-  all:
-    - less($temp, 10)
-
-  goal: "Te koud"
-
-goal2:
-
-  all:
-    - greater($temp, 9)
-
-  goal: "Te warm"
+  "Wat is er?":
+    text: $gevoel
