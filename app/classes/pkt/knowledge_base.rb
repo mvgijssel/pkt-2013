@@ -15,8 +15,10 @@ module PKT
 
     def initialize
 
+      # pass a new engine with name :knowledge_base_engine to the super class
       super KnowledgeBase::engine :knowledge_base_engine
 
+      # instantiate the possible rules array
       @possible_rules = Array.new
 
     end
@@ -52,7 +54,7 @@ module PKT
               rule AND *conditions do |v|
 
                 # when rule is applicable, add to possible rules
-                @possible_rules << rule_object
+                rule_triggered rule_object
 
               end
 
@@ -62,7 +64,7 @@ module PKT
               rule OR *conditions do |v|
 
                 # when rule is applicable, add to possible rules
-                @possible_rules << rule_object
+                rule_triggered rule_object
 
               end
 
@@ -71,7 +73,27 @@ module PKT
 
           end
 
+      end
 
+    end
+
+    def rule_triggered(rule_object)
+
+      puts 's'
+
+      # if the rule only contains facts and no questions assert all the facts immediatly
+      if rule_object.questions.empty? && rule_object.goal.nil?
+
+        rule_object.facts.each do |fact|
+
+          assert fact
+
+        end
+
+      else
+
+        # add the rule object to the possible_rules array
+        @possible_rules << rule_object
 
       end
 
@@ -84,7 +106,7 @@ module PKT
       # start the matching of the engine
       @engine.match
 
-      # reject all rules that ARE goals
+      # reject all rules that ARE goals and return the result
       @possible_rules.reject { |rule| !rule.goal.nil? }
 
     end
@@ -112,10 +134,10 @@ module PKT
 
       if is_fact?(var1) && is_fact?(var2)
 
-        return [ AND(
-                     [Fact, :f1, m.name == var1, {m.value => :f1_value}],
-                     [Fact, :f2, m.name == var2, operation(m.value, operator, b(:f1_value))]
-                 )]
+        return [AND(
+                    [Fact, :f1, m.name == var1, {m.value => :f1_value}],
+                    [Fact, :f2, m.name == var2, operation(m.value, operator, b(:f1_value))]
+                )]
 
       end
 

@@ -6,7 +6,7 @@ class PagesController < ApplicationController
     k = PKT::KnowledgeBase.new
 
     # parse the yml file and create rules in the knowledge base
-    PKT::RuleParser.yml("#{Rails::root}/own_rules.yml", k)
+    PKT::RuleParser.yml("#{Rails::root}/rules.yml", k)
 
     # get the previous answered rules
     answered_rules = answered_rules_from_params
@@ -63,8 +63,6 @@ class PagesController < ApplicationController
   private
 
   def answered_rules_from_params
-
-    puts 's'
 
     if params[:answered].nil?
       HashWithIndifferentAccess.new
