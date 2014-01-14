@@ -11,6 +11,12 @@ module PKT
 
     end
 
+    def has var1
+
+      self.conditions << [var1, :has, nil]
+
+    end
+
     def equals var1, var2
 
       self.conditions << [var1, :==, var2]

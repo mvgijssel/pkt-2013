@@ -118,6 +118,9 @@ module PKT
           when 'greater'
             matcher.greater(result[:var1], result[:var2])
 
+          when 'has'
+            matcher.has(result[:var1])
+
           else
             raise "Unknown operation #{result[:operation]} in condition #{condition}"
         end

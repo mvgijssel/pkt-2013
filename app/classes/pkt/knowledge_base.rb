@@ -1,4 +1,4 @@
-# TODO: data validation of the yml file
+# TODO: data validation of the yml file, input text cannot be empty for example! and numbers etc
 # TODO: refactor goals to results / actions
 # TODO: refactor code so predicates like equals() are classes
 # TODO: refactor goal to action / result
@@ -166,6 +166,9 @@ module PKT
           var1 > var2
         when :<
           var1 < var2
+        when :has
+          # TODO: other way conditions are handled!
+          var1
         else
           raise "Unknown operator #{operator}"
 

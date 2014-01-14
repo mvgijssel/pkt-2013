@@ -1,33 +1,11 @@
 rule1:
 
   "Temperature":
-    checkbox:
-      $temp: temp?
+    text: $temp
 
 rule2:
 
   all:
-    - equals($temp, 1)
+    - has($temp)
 
-  $goal: 1
-
-rule3:
-
-  all:
-    - equals($temp, 0)
-
-  $goal: 2
-
-goal1:
-
-  all:
-    - equals($goal, 1)
-
-  goal: "Goal 1 bereikt!"
-
-goal2:
-
-  all:
-    - equals($goal, 2)
-
-  goal: "Goal 2 bereikt!"
+  goal: 'Niceee'
