@@ -1,11 +1,39 @@
-rule1:
+rule0:
+  $fact1: 1
 
-  "Temperature":
-    text: $temp
+rule1:
+  $fact2: 1
 
 rule2:
 
   all:
-    - has($temp)
+    - has($fact1)
+    - has($fact2)
 
-  goal: 'Niceee'
+  "Temperature":
+    text: $temp
+
+  $fact3: $fact1 + $fact2
+
+rule3:
+
+  all:
+    - has($fact3)
+
+  $fact4: $fact3 + $temp
+
+goal1:
+
+  all:
+    - equals($fact4, 2)
+
+  goal: "Reached goal 1"
+
+goal2:
+
+  all:
+    - greater($fact4, 2)
+
+  goal: "Reached goal 2"
+
+

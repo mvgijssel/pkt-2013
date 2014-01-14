@@ -1,6 +1,9 @@
 module PKT
 
+  # TODO: throw error on the same goal or rule name
   # TODO: maybe instead of objects, use a hash?
+  # TODO: central place with regular expressions what characters a fact / arithmetic / ... can contain
+  # TODO: better handling of types! maybe label a fact with of some sort that is read by the knowledge base? eval()?
   class RuleParser
 
     def self.yml location, knowledge_base
@@ -122,7 +125,7 @@ module PKT
             matcher.has(result[:var1])
 
           else
-            raise "Unknown operation #{result[:operation]} in condition #{condition}"
+            raise "Unknown operation '#{result[:operation]}' in condition '#{condition}'"
         end
 
       end

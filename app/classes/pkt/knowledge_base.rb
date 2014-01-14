@@ -3,6 +3,9 @@
 # TODO: refactor code so predicates like equals() are classes
 # TODO: refactor goal to action / result
 # TODO: when goal is rendered show decision tree
+# TODO: introduce concept of Question Rule / Goal Rule and Fact Rule
+# TODO: printing of facts in a goal statement
+# TODO: when fact already exists and new value is assigned MODIFY the fact, do not assert new one
 
 module PKT
 
@@ -12,6 +15,12 @@ module PKT
     extend Ruleby
 
     attr_accessor :possible_rules
+
+    def next_question
+
+    #  TODO: return the next question or nil if there aren't any questions left
+
+    end
 
     def initialize
 
@@ -27,8 +36,13 @@ module PKT
 
       case
 
-        # TODO: replace when with if statement
-        when rule_object.matcher.nil?
+        # rule which asserts facts without conditions or questions
+        when rule_object.matcher.nil? && rule_object.questions.empty?
+
+          # assert all the facts
+          rule_object.assert_facts self
+
+        when rule_object.matcher.nil? && rule_object.questions.count > 0
 
           # rule can be fired directly
           @possible_rules << rule_object
@@ -77,18 +91,28 @@ module PKT
 
     end
 
-    def rule_triggered(rule_object)
+    def retrieve_fact(fact_name)
 
-      puts 's'
+      facts = engine.retrieve Fact
+
+      facts = facts.select{ |fact| fact.name == fact_name }
+
+      raise "Fact with name #{fact_name} is unknown or not yet asserted." if facts.empty?
+
+      raise "There is more than 1 fact (#{facts.count} total) with name #{fact_name}" if facts.count > 1
+
+      # return single fact
+      facts[0]
+
+    end
+
+    def rule_triggered(rule_object)
 
       # if the rule only contains facts and no questions assert all the facts immediatly
       if rule_object.questions.empty? && rule_object.goal.nil?
 
-        rule_object.facts.each do |fact|
-
-          assert fact
-
-        end
+        # assert the facts associated with the rule object
+        rule_object.assert_facts self
 
       else
 

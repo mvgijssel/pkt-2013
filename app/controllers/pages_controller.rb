@@ -1,6 +1,10 @@
 class PagesController < ApplicationController
 
+  # TODO: move a lot of this code into the knowledge base class
   def home
+
+    # TODO: all the rules that 'fired' should be in a hash/array with all the facts + values associated with that rule
+    # TODO: this includes facts asserted directly when the rule is chosen
 
     # instantiate the knowledge base
     k = PKT::KnowledgeBase.new
@@ -41,6 +45,10 @@ class PagesController < ApplicationController
       # create instance variable for rendering
       # get the first NON goal rule?
       @rule          = rules[0]
+
+      # assert the facts associated with the rule
+      # TODO: should be handled by the knowledge base class
+      @rule.assert_facts k
 
       # update the instance variable answered
       @answered_data = answered_rules
