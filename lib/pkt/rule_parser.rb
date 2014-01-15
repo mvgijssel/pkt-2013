@@ -58,7 +58,7 @@ module PKT
             when name[0] == '$' # it's a fact
 
               # create a fact and add it to the rule
-              rule.facts << Fact.new(name, value)
+              rule.facts << knowledge_base.create_fact(name, value)
 
             else # it's a question
 

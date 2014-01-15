@@ -1,29 +1,24 @@
 rule0:
-
-  $fact1: 'SHINE'
+  "Getal?":
+    text: $getal
 
 rule1:
+  all:
+    - has($getal)
 
-  "Temperature":
-    text: $temp
-
-  $fact2: 'FOO'
-
-rule2:
-
-  "Hoe dan?":
-    radio:
-      $hoe:
-        1: Ja
-        0: Nee
+  $getal2: $getal + 3
 
 result1:
 
   all:
-    - has($fact1)
-    - has($temp)
-    - has($fact2)
-    - has($hoe)
+    - greater($getal2, 5)
 
-  goal: "Some goal!"
+  goal: "Meer dan 5!"
+
+result2:
+
+  all:
+    - less($getal2, 5)
+
+  goal: "Minder dan 5!"
 

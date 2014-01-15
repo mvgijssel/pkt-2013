@@ -289,12 +289,14 @@ module PKT
       raise "There is more than 1 fact (#{facts.count} total) with name #{fact_name}" if facts.count > 1
 
       # return single fact
-      facts[0]
+      facts.first
 
     end
 
     # return a hash of the triggered rules
     def triggered_rules_to_encrypted
+
+      # TODO: add encryption
 
       # instantiate array
       array = []
@@ -330,6 +332,8 @@ module PKT
     # get triggered rules from the hash
     def triggered_rules_from_encrypted(encrypted)
 
+      # TODO: add decryption
+
       # create a new rules array
       rules = Array.new
 
@@ -352,7 +356,7 @@ module PKT
         hash['facts'].each do |fact|
 
           # create a new fact for each
-          facts << Fact.new(fact['name'], fact['value'])
+          facts << create_fact(fact['name'], fact['value'])
 
         end
 
@@ -369,6 +373,13 @@ module PKT
 
     end
 
+    # method for creating facts
+    def create_fact(name, value)
+
+      Fact.new name, convert_variable(value)
+
+    end
+
     private
 
     # get the facts posted
@@ -380,7 +391,7 @@ module PKT
 
         if is_fact? name
 
-          facts << Fact.new(name, value)
+          facts << create_fact(name, value)
 
         end
 
@@ -426,13 +437,47 @@ module PKT
     # assert all the facts stored in a rule
     def assert_facts_from_rule(rule_object)
 
+      # get the facts from the rule
       facts = rule_object.facts
 
+      # iterate all the facts
       facts.each do |fact|
 
+        # evaluate fact value
+        # TODO: ONLY evaluate fact when trigger is called on a top level rule fact
+        fact.value = evaluate_fact_value fact.value
+
+        # let the ruleby engine assert the fact
         @engine.assert fact
 
       end
+
+    end
+
+    # evaluates the value of the fact
+    def evaluate_fact_value(value)
+
+      # only when the type of the value is a string
+      if value.is_a? String
+
+        # replace each fact name with the value of that fact
+        k = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
+
+          # get the fact from the knowledge base
+          fact = retrieve_fact match
+
+          # return the value of the fact
+          fact.value
+
+        }
+
+        # TODO: eval is security risk, create sandbox? or allow less operators?
+        value = eval(k)
+
+      end
+
+      # return the value
+      value
 
     end
 
@@ -472,6 +517,7 @@ module PKT
 
       var1 = convert_variable(item[0])
       var2 = convert_variable(item[2])
+
       operator = item[1]
 
       if is_fact?(var1) && is_fact?(var2)
@@ -496,6 +542,22 @@ module PKT
       end
 
       raise "There is no fact name in: #{var1} #{operator} #{var2}"
+
+    end
+
+    # TODO: what about floats?
+    def convert_variable var
+
+      # if it returns nil, it is a string
+      if /^[0-9]+$/.match(var).nil?
+
+        var
+
+      else # otherwise it is a integer, so convert to integer
+
+        var.to_i
+
+      end
 
     end
 
@@ -532,21 +594,29 @@ module PKT
 
     end
 
-    # TODO: should be moved to a central location, now if defined twice
-    def convert_variable var
-
-      # if it returns nil, it is a string
-      if /^[0-9]+$/.match(var).nil?
-
-        var
-
-      else # otherwise it is a integer
-
-        var.to_i
-
-      end
-
-    end
+    #def assert(knowledge_base)
+    #
+    #  # evaluate the value of the fact, can contain arithmetic
+    #  if @value.is_a? String
+    #
+    #    k = @value.gsub(/\$[a-zA-Z0-9]+/) { |match|
+    #
+    #      # get the fact from the knowledge base
+    #      fact = knowledge_base.retrieve_fact match
+    #
+    #      # return the value of the fact
+    #      fact.value
+    #
+    #    }
+    #
+    #
+    #    @value = eval(k)
+    #
+    #  end
+    #
+    #  knowledge_base.assert self
+    #
+    #end
 
   end
 

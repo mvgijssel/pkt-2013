@@ -15,6 +15,7 @@ load 'pkt/rule.rb'
 load 'pkt/knowledge_base.rb'
 load 'pkt/rule_parser.rb'
 
+
 # the configuration of the knowledge base
 # TODO: should be placed in an initializer
 PKT::KnowledgeBase.setup :pkt do |config|
