@@ -1,35 +1,29 @@
 rule0:
-  $fact0: 1
+
+  $fact1: 'SHINE'
 
 rule1:
 
-  all:
-    - has($fact0)
+  "Temperature":
+    text: $temp
 
-  $fact1: 2
+  $fact2: 'FOO'
 
 rule2:
 
+  "Hoe dan?":
+    radio:
+      $hoe:
+        1: Ja
+        0: Nee
+
+result1:
+
   all:
     - has($fact1)
-
-  $fact2: 3
-
-rule3:
-
-  all:
+    - has($temp)
     - has($fact2)
+    - has($hoe)
 
-  $fact3: 4
+  goal: "Some goal!"
 
-rule4:
-
-  all:
-    - equals($fact0, 1)
-    - equals($fact1, 2)
-    - equals($fact2, 3)
-    - equals($fact3, 4)
-
-
-  "Temperature":
-    text: $temp

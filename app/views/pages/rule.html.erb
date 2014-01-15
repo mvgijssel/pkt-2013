@@ -3,7 +3,7 @@
 
 <%= form_tag({controller: 'pages', action: 'home'}, method: 'post') do %>
 
-
+    <%= knowledge_base_fields  %>
 
     <% @rule.questions.each do |question| %>
 

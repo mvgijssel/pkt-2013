@@ -8,6 +8,7 @@ module PKT
 
     module InstanceMethods
 
+      # render the hidden input fields for determining past / current rules
       def knowledge_base_fields
 
         # get the knowledge base
@@ -15,11 +16,16 @@ module PKT
         k = PKT::KnowledgeBase.instance :pkt
 
         # render an hidden_field_tag with the current rule
-        k.current_rule
+        rule = k.current_rule
 
-        # render an hidden_field_tag with the previous rules
+        # get the triggered rules
+        rules = k.triggered_rules_to_encrypted
 
+        # render an hidden field with the current rule
+        output = hidden_field_tag(:current_rule, rule.name)
 
+        # render an hidden field with the previous rules
+        output += hidden_field_tag(:triggered_rules, rules)
 
       end
 

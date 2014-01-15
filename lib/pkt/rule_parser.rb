@@ -1,7 +1,6 @@
 module PKT
 
   # TODO: throw error on the same goal or rule name
-  # TODO: maybe instead of objects, use a hash?
   # TODO: central place with regular expressions what characters a fact / arithmetic / ... can contain
   # TODO: better handling of types! maybe label a fact with of some sort that is read by the knowledge base? eval()?
   class RuleParser
@@ -29,8 +28,8 @@ module PKT
               raise "Error in rule #{rule_name}: the content of #{name} is nill"
 
             when name == 'any'
+
               # it's an any matcher
-              # TODO: implement handling of a single condition
               # always followed by an array of conditions
               matcher = Matcher.new :any
 

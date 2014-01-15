@@ -1,9 +1,7 @@
 # TODO: data validation of the yml file, input text cannot be empty for example! and numbers etc
-# TODO: refactor goals to results / actions
 # TODO: refactor code so predicates like equals() are classes
 # TODO: refactor goal to action / result
 # TODO: when goal is rendered show decision tree
-# TODO: introduce concept of Question Rule / Goal Rule and Fact Rule
 # TODO: printing of facts in questions / goal statement
 # TODO: when fact already exists and new value is assigned MODIFY the fact, do not assert new one
 # TODO: should have a initializer for loading the rules in the database AND for configuration
@@ -40,6 +38,11 @@ module PKT
 
     end
 
+    public
+
+    # all the rules that are already triggered
+    attr_accessor :triggered_rules
+
     private
 
     # flag if the engine has already run the match method
@@ -54,8 +57,11 @@ module PKT
     # stores the results
     attr_accessor :result_rules
 
-    # all the rules that are already triggered
-    attr_accessor :triggered_rules
+    # array for rules to start with
+    attr_accessor :start_rules
+
+    # stores all the rules
+    attr_accessor :rules
 
     public
 
@@ -73,6 +79,8 @@ module PKT
       @result_rules = Array.new
       @fact_rules = Array.new
       @triggered_rules = Array.new
+      @start_rules = Array.new
+      @rules = {}
 
     end
 
@@ -92,6 +100,9 @@ module PKT
     # add a rule to the knowledge base
     def add_rule(rule_object)
 
+      # store the rule
+      @rules[rule_object.name] = rule_object
+
       case
 
         # rule which asserts facts without conditions or questions
@@ -102,8 +113,8 @@ module PKT
 
         when rule_object.matcher.nil? && rule_object.questions.count > 0
 
-          # rule can be triggered directly
-          @question_rules << rule_object
+          # rules can be triggered directly
+          @start_rules << rule_object
 
         else
 
@@ -115,17 +126,6 @@ module PKT
 
           # generate the ruleby conditions based on the matcher conditions
           conditions = create_conditions matcher.conditions
-
-          #rule [Fact, :f1, m.name == '$fact0', m.value == 1],
-          #     [Fact, :f2, m.name == '$fact1', m.value == 2],
-          #     [Fact, :f3, m.name == '$fact2', m.value == 3],
-          #     [Fact, :f4, m.name == '$fact3', m.value == 4] do |v|
-          #
-          #  #rule_handler rule_object
-          #
-          #  puts 'TRIGGERED!'
-          #
-          #end
 
           # switch statement for the matcher type
           case matcher_type
@@ -169,11 +169,42 @@ module PKT
 
     end
 
-    # assert facts from the params hash
-    def assert_facts_from_params(params)
+    # update knowledge base from the params hash
+    def update_from_params(params)
 
-      # the params should be converted to rules and associated facts
-      # TODO: implement assert_facts_from_params
+      if params.has_key? :triggered_rules
+
+        # all the posted triggered rules
+        posted_triggered_rules = triggered_rules_from_encrypted(params[:triggered_rules])
+
+        # trigger all the triggered rules?
+        posted_triggered_rules.each do |rule|
+
+          # trigger all the previous triggered rules
+          trigger rule
+
+        end
+
+      end
+
+      # do some checks for stuff needed in the params
+      if params.has_key? :current_rule
+
+        # get the posted rule
+        posted_rule = retrieve_rule(params[:current_rule])
+
+        # get the posted facts
+        posted_facts = facts_from_params params
+
+        # add the facts to the posted rule
+        posted_rule.facts.concat posted_facts
+
+        # trigger the posted rule
+        trigger posted_rule
+
+      end
+
+      # TODO: set the engine_match boolean to false??
 
     end
 
@@ -184,6 +215,7 @@ module PKT
       unless @engine_has_matched
 
         # first assert all the facts from the fact rules
+        # these are rules without conditions and only facts
         # when doing this while adding the rules something weird happens and instead of 1 match, stuff matches 22+ times
         @fact_rules.each do |rule|
 
@@ -191,23 +223,29 @@ module PKT
 
         end
 
+        # add start rules to the question rules when they are not yet handled
+        @start_rules.each do |rule|
+
+          # when rule not yet triggered
+          unless triggered? rule
+
+            # add to the possible questions
+            @question_rules << rule
+
+          end
+
+        end
+
+        # match the rules using the ruleby engine
         @engine.match
+
+        # set the matched flag
         @engine_has_matched = true
 
       end
 
       # get the first of the question rules
-      r = @question_rules.first
-
-      unless r.nil? || triggered?(r)
-
-        # trigger the rule
-        trigger r
-
-      end
-
-      # return the rule
-      r
+      @question_rules.first
 
     end
 
@@ -228,6 +266,15 @@ module PKT
     # retrieve a rule created defined as defined in the yml file
     def retrieve_rule(rule_name)
 
+      # convert to symbol
+      rule_name = rule_name.to_sym
+
+      # raise error if rule doesn't exist
+      raise "Rule with name '#{rule_name}' doesn't exist" unless @rules.has_key? rule_name
+
+      # return the rule
+      @rules[rule_name]
+
     end
 
     # retrieve a fact asserted in the knowledge base
@@ -246,7 +293,103 @@ module PKT
 
     end
 
+    # return a hash of the triggered rules
+    def triggered_rules_to_encrypted
+
+      # instantiate array
+      array = []
+
+      @triggered_rules.each do |rule|
+
+        # create a new hash
+        hash = {:name => rule.name, :facts => []}
+
+        # get the facts added by the rule
+        facts = rule.facts
+
+        # iterate all the facts
+        facts.each do |fact|
+
+          hash[:facts] << {:name => fact.name, :value => fact.value}
+
+        end
+
+        # add the hash to the array
+        array << hash
+
+      end
+
+      # return the encrypted array
+      string = array.to_json
+
+      # encrypt the data
+      encrypted = string
+
+    end
+
+    # get triggered rules from the hash
+    def triggered_rules_from_encrypted(encrypted)
+
+      # create a new rules array
+      rules = Array.new
+
+      # decrypt the data
+      string = encrypted
+
+      # get the array back
+      array = JSON.parse string
+
+      # iterate the array
+      array.each do |hash|
+
+        # get the rule back
+        rule = retrieve_rule hash['name']
+
+        # create a new facts array
+        facts = []
+
+        # retrieve each of the facts
+        hash['facts'].each do |fact|
+
+          # create a new fact for each
+          facts << Fact.new(fact['name'], fact['value'])
+
+        end
+
+        # replace the facts on the rule
+        rule.facts = facts
+
+        # add to the array
+        rules << rule
+
+      end
+
+      # return the rules array
+      rules
+
+    end
+
     private
+
+    # get the facts posted
+    def facts_from_params(params)
+
+      facts = []
+
+      params.each do |name, value|
+
+        if is_fact? name
+
+          facts << Fact.new(name, value)
+
+        end
+
+      end
+
+      # return facts
+      facts
+
+    end
 
     # gets called when the conditions of a rule match
     def rule_handler(rule_object)
@@ -265,11 +408,13 @@ module PKT
           # when the goal is NOT nil
           when !rule_object.goal.nil?
 
+            # add to the result rules
             @result_rules << rule_object
 
           # otherwise add to the question rules
           else
 
+            # add to the possible questions
             @question_rules << rule_object
 
         end
@@ -294,18 +439,24 @@ module PKT
     # trigger a rule, asserting the facts and adding to the triggered_rules
     def trigger(rule_object)
 
-      # assert all the facts stored in the rule
-      assert_facts_from_rule rule_object
+      # only when not yet triggered trigger the rule
+      unless triggered? rule_object
 
-      # add the rule to the triggered rules
-      @triggered_rules << rule_object
+        # assert all the facts stored in the rule
+        assert_facts_from_rule rule_object
+
+        # add the rule to the triggered rules
+        @triggered_rules << rule_object
+
+      end
 
     end
 
     # determine if rule is already triggered
     def triggered? (rule_object)
 
-      false
+      # check if the rule is in the triggered rules array
+      triggered_rules.include? rule_object
 
     end
 
