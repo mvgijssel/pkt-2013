@@ -1,20 +1,35 @@
 rule0:
-  $fact1: 1
+  $fact0: 1
 
 rule1:
 
   all:
-    - has($fact1)
+    - has($fact0)
 
-  "Temperature":
-    text: $temp
+  $fact1: 2
 
-  $fact2: $fact1 + 1
-
-result1:
+rule2:
 
   all:
     - has($fact1)
+
+  $fact2: 3
+
+rule3:
+
+  all:
     - has($fact2)
 
-  goal: "Niceeee"
+  $fact3: 4
+
+rule4:
+
+  all:
+    - equals($fact0, 1)
+    - equals($fact1, 2)
+    - equals($fact2, 3)
+    - equals($fact3, 4)
+
+
+  "Temperature":
+    text: $temp

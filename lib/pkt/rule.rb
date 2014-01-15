@@ -8,16 +8,6 @@ module PKT
 
     attr_accessor :name, :questions, :goal, :facts
 
-    def assert_facts(knowledge_base)
-
-      @facts.each do |fact|
-
-        fact.assert knowledge_base
-
-      end
-
-    end
-
     def initialize(name)
 
       self.name      = name.to_sym

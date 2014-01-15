@@ -5,6 +5,7 @@ load 'pkt/text_answer.rb'
 
 load 'pkt/controller_additions.rb'
 load 'pkt/model_additions.rb'
+load 'pkt/view_additions.rb'
 
 load 'pkt/question.rb'
 load 'pkt/fact.rb'

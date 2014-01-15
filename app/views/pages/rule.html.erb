@@ -3,9 +3,7 @@
 
 <%= form_tag({controller: 'pages', action: 'home'}, method: 'post') do %>
 
-    <%= hidden_field :current_rule, @rule.name %>
 
-    <input type="hidden" name='answered' value='<%= @answered_data.to_json %>'>
 
     <% @rule.questions.each do |question| %>
 

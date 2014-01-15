@@ -54,9 +54,6 @@ module PKT
     # stores the results
     attr_accessor :result_rules
 
-    # for the fact rules, rules that contain only facts and should be run immediatly
-    attr_accessor :fact_rules
-
     # all the rules that are already triggered
     attr_accessor :triggered_rules
 
@@ -71,6 +68,7 @@ module PKT
       # instantiate variables
       @engine_has_matched = false
       @yml_locations = nil
+
       @question_rules = Array.new
       @result_rules = Array.new
       @fact_rules = Array.new
@@ -99,12 +97,12 @@ module PKT
         # rule which asserts facts without conditions or questions
         when rule_object.matcher.nil? && rule_object.questions.empty?
 
-          # assert all the facts
-          rule_object.assert_facts self
+          # add the rule to the fact rules array, contains rules with only facts
+          @fact_rules << rule_object
 
         when rule_object.matcher.nil? && rule_object.questions.count > 0
 
-          # rule can be fired directly
+          # rule can be triggered directly
           @question_rules << rule_object
 
         else
@@ -118,11 +116,22 @@ module PKT
           # generate the ruleby conditions based on the matcher conditions
           conditions = create_conditions matcher.conditions
 
+          #rule [Fact, :f1, m.name == '$fact0', m.value == 1],
+          #     [Fact, :f2, m.name == '$fact1', m.value == 2],
+          #     [Fact, :f3, m.name == '$fact2', m.value == 3],
+          #     [Fact, :f4, m.name == '$fact3', m.value == 4] do |v|
+          #
+          #  #rule_handler rule_object
+          #
+          #  puts 'TRIGGERED!'
+          #
+          #end
+
           # switch statement for the matcher type
-          # TODO: implement matcher types
           case matcher_type
 
-            when :all # all the conditions must match
+            # all the conditions must match
+            when :all
 
               # star to convert array to arguments
               rule AND *conditions do |v|
@@ -132,7 +141,8 @@ module PKT
 
               end
 
-            when :any # one of the conditions must match
+            # one of the conditions must match
+            when :any
 
               # star to convert array to arguments
               rule OR *conditions do |v|
@@ -163,23 +173,41 @@ module PKT
     def assert_facts_from_params(params)
 
       # the params should be converted to rules and associated facts
-
-
-
+      # TODO: implement assert_facts_from_params
 
     end
 
     # get the next rule
-    def next_rule
+    def current_rule
 
       # start the matching of the ruleby engine if not yet called
       unless @engine_has_matched
+
+        # first assert all the facts from the fact rules
+        # when doing this while adding the rules something weird happens and instead of 1 match, stuff matches 22+ times
+        @fact_rules.each do |rule|
+
+          trigger rule
+
+        end
+
         @engine.match
         @engine_has_matched = true
+
       end
 
-      # return the first of the question rules
-      @question_rules.first
+      # get the first of the question rules
+      r = @question_rules.first
+
+      unless r.nil? || triggered?(r)
+
+        # trigger the rule
+        trigger r
+
+      end
+
+      # return the rule
+      r
 
     end
 
@@ -220,34 +248,64 @@ module PKT
 
     private
 
+    # gets called when the conditions of a rule match
     def rule_handler(rule_object)
 
-      case
+      # only rules that are not yet triggered should be processed
+      unless triggered? rule_object
 
-        when rule_object.questions.empty? && rule_object.goal.nil?
+        case
 
           # when there are no questions and no goals
-          # add to the fact rules
-          # TODO: ALSO should be added to globally asserted facts / fired rules so followup rules still have the data
-          @fact_rules << rule_object
+          when rule_object.questions.empty? && rule_object.goal.nil?
 
-          # trigger rule when not already triggered -> function for checking
+            # trigger the rule, thus asserting facts and storing in triggered rules
+            trigger rule_object
 
-        @triggered_rules << rule_object # something like this?
+          # when the goal is NOT nil
+          when !rule_object.goal.nil?
 
-          # should be triggered while still executing engine.match!!
-
-        when !rule_object.goal.count.nil?
-
-          # when the goal is defined
-          @result_rules << rule_object
-
-        else
+            @result_rules << rule_object
 
           # otherwise add to the question rules
-          @question_rules << rule_object
+          else
+
+            @question_rules << rule_object
+
+        end
 
       end
+
+    end
+
+    # assert all the facts stored in a rule
+    def assert_facts_from_rule(rule_object)
+
+      facts = rule_object.facts
+
+      facts.each do |fact|
+
+        @engine.assert fact
+
+      end
+
+    end
+
+    # trigger a rule, asserting the facts and adding to the triggered_rules
+    def trigger(rule_object)
+
+      # assert all the facts stored in the rule
+      assert_facts_from_rule rule_object
+
+      # add the rule to the triggered rules
+      @triggered_rules << rule_object
+
+    end
+
+    # determine if rule is already triggered
+    def triggered? (rule_object)
+
+      false
 
     end
 

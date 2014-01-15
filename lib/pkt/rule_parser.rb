@@ -6,7 +6,7 @@ module PKT
   # TODO: better handling of types! maybe label a fact with of some sort that is read by the knowledge base? eval()?
   class RuleParser
 
-    def self.yml location, knowledge_base
+    def self.yml(location, knowledge_base)
 
       # load the yml file
       yml_config = YAML.load_file(location)
@@ -15,7 +15,7 @@ module PKT
       yml_config.each do |rule_name, rule_content|
 
         # create the rule object
-        rule = Rule.new rule_name
+        rule = PKT::Rule.new rule_name
 
         # raise error if isn't iteratable?
         raise "Error in rule #{rule_name}: #{rule_content} does not contain any further definitions" unless rule_content.respond_to? :each
@@ -63,7 +63,7 @@ module PKT
 
             else # it's a question
 
-                 # create a new question
+              # create a new question
               question = Question.new name
 
               # question can only contain single answer method

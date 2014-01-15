@@ -5,14 +5,16 @@ k = PKT::KnowledgeBase.instance :pkt
 
 # add the rules to the system
 k.add_rules
+#
+## assert facts from the parameters
+## k.assert_facts_from_params params
+#
+## get the next rule
+rule = k.current_rule
 
-# assert facts from the parameters
-# k.assert_facts_from_params params
 
-# get the next rule
-rule = k.next_rule
 
-puts rule
+
 
 
 
