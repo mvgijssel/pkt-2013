@@ -8,6 +8,8 @@ module PKT
       self.value = value
     end
 
+
+
     def assert(knowledge_base)
 
       # evaluate the value of the fact, can contain arithmetic

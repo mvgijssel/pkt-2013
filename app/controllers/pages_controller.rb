@@ -1,8 +1,38 @@
 class PagesController < ApplicationController
 
-  # TODO: move a lot of this code into the knowledge base class
+
   def home
 
+    # get a knowledge base with specified label
+    k = knowledge_base :pkt
+
+    # assert facts from the parameters
+    k.assert_facts_from_params params
+
+    # get the next rule
+    rule = k.next_rule
+
+    # if there is no next rule, render result
+    if rule.nil?
+
+      # get the possible result rules
+      results = k.result_rules
+
+      # render the result page
+      render :result
+
+    else
+
+      render :rule
+
+    end
+
+
+
+
+
+
+    # TODO: move a lot of this code into the knowledge base class
     # TODO: all the rules that 'fired' should be in a hash/array with all the facts + values associated with that rule
     # TODO: this includes facts asserted directly when the rule is chosen
 
@@ -20,10 +50,10 @@ class PagesController < ApplicationController
 
       # get the rule posted, strong parameters posts everything in hashes :/
       # TODO: change the parameter is handled, not hash
-      posted_rule                 = params[:current_rule].keys[0]
+      posted_rule = params[:current_rule].keys[0]
 
       # get the facts posted by the rule
-      facts                       = facts_from_params
+      facts = facts_from_params
 
       # add the current rule and facts to the answered rules
       answered_rules[posted_rule] = facts
@@ -34,7 +64,7 @@ class PagesController < ApplicationController
     assert_facts_from_rules answered_rules, k
 
     # get all the possible rules based on known facts and rules
-    rules = k.possible_rules
+    rules = k.question_rules
 
     # remove the rules that already have been answered
     rules = remove_answered_rules rules, answered_rules
@@ -44,7 +74,7 @@ class PagesController < ApplicationController
 
       # create instance variable for rendering
       # get the first NON goal rule?
-      @rule          = rules[0]
+      @rule = rules[0]
 
       # assert the facts associated with the rule
       # TODO: should be handled by the knowledge base class
@@ -54,7 +84,7 @@ class PagesController < ApplicationController
       @answered_data = answered_rules
 
       # get the first rule and render
-      render :question
+      render :rule
 
     else
 
@@ -62,7 +92,7 @@ class PagesController < ApplicationController
       @goals = k.goals
 
       # render the goal view
-      render :goal
+      render :result
 
     end
 
