@@ -6,9 +6,9 @@ require 'pkt/answer/checkbox'
 require 'pkt/answer/radio'
 require 'pkt/answer/text'
 
-require 'pkt/controller_additions'
-require 'pkt/model_additions'
-require 'pkt/view_additions'
+require 'pkt/additions/controller'
+require 'pkt/additions/model'
+require 'pkt/additions/view'
 
 require 'pkt/question'
 require 'pkt/fact'

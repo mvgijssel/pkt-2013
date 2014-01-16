@@ -6,9 +6,9 @@ load 'pkt/answer/checkbox.rb'
 load 'pkt/answer/radio.rb'
 load 'pkt/answer/text.rb'
 
-load 'pkt/controller_additions.rb'
-load 'pkt/model_additions.rb'
-load 'pkt/view_additions.rb'
+load 'pkt/additions/controller.rb'
+load 'pkt/additions/model.rb'
+load 'pkt/additions/view.rb'
 
 load 'pkt/question.rb'
 load 'pkt/fact.rb'
