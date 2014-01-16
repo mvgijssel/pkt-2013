@@ -63,6 +63,9 @@ module PKT
     # stores all the rules
     attr_accessor :rules
 
+    # secret key for encryption / decryption
+    attr_accessor :secret_key
+
     public
 
     # create a new knowledge base
@@ -73,14 +76,29 @@ module PKT
 
       # instantiate variables
       @engine_has_matched = false
-      @yml_locations = nil
+      @yml_locations      = nil
 
-      @question_rules = Array.new
-      @result_rules = Array.new
-      @fact_rules = Array.new
+      @question_rules  = Array.new
+      @result_rules    = Array.new
+      @fact_rules      = Array.new
       @triggered_rules = Array.new
-      @start_rules = Array.new
-      @rules = {}
+      @start_rules     = Array.new
+      @rules           = {}
+
+    end
+
+    # add one or multiple yml locations
+    def yml
+
+      # return @yml_locations OR return an empty array and store this array in @yml_locations
+      @yml_locations ||= []
+
+    end
+
+    # set the secret key
+    def secret=(value)
+
+      @secret_key=value
 
     end
 
@@ -119,13 +137,13 @@ module PKT
         else
 
           # get the matcher
-          matcher = rule_object.matcher
+          matcher      = rule_object.matcher
 
           # get the matcher type (any / all)
           matcher_type = matcher.type
 
           # generate the ruleby conditions based on the matcher conditions
-          conditions = create_conditions matcher.conditions
+          conditions   = create_conditions matcher.conditions
 
           # switch statement for the matcher type
           case matcher_type
@@ -161,14 +179,6 @@ module PKT
 
     end
 
-    # add one or multiple yml locations
-    def yml
-
-      # return @yml_locations OR return an empty array and store this array in @yml_locations
-      @yml_locations ||= []
-
-    end
-
     # update knowledge base from the params hash
     def update_from_params(params)
 
@@ -191,20 +201,20 @@ module PKT
       if params.has_key? :current_rule
 
         # get the posted rule
-        posted_rule = retrieve_rule(params[:current_rule])
+        posted_rule  = retrieve_rule(params[:current_rule])
 
         # get the posted facts
         posted_facts = facts_from_params params
 
-        # add the facts to the posted rule
-        posted_rule.facts.concat posted_facts
+        # prepend the submitted facts to the posted rule
+        # prepend causes the submitted facts to be processed earlier
+        # so rule facts can have submitted facts in their equasion
+        posted_rule.facts.unshift *posted_facts
 
         # trigger the posted rule
         trigger posted_rule
 
       end
-
-      # TODO: set the engine_match boolean to false??
 
     end
 
@@ -296,15 +306,13 @@ module PKT
     # return a hash of the triggered rules
     def triggered_rules_to_encrypted
 
-      # TODO: add encryption
-
       # instantiate array
       array = []
 
       @triggered_rules.each do |rule|
 
         # create a new hash
-        hash = {:name => rule.name, :facts => []}
+        hash  = {:name => rule.name, :facts => []}
 
         # get the facts added by the rule
         facts = rule.facts
@@ -322,32 +330,30 @@ module PKT
       end
 
       # return the encrypted array
-      string = array.to_json
+      string    = array.to_json
 
       # encrypt the data
-      encrypted = string
+      encrypted = encrypt(string)
 
     end
 
     # get triggered rules from the hash
     def triggered_rules_from_encrypted(encrypted)
 
-      # TODO: add decryption
-
       # create a new rules array
-      rules = Array.new
+      rules  = Array.new
 
       # decrypt the data
-      string = encrypted
+      string = decrypt(encrypted)
 
       # get the array back
-      array = JSON.parse string
+      array  = JSON.parse string
 
       # iterate the array
       array.each do |hash|
 
         # get the rule back
-        rule = retrieve_rule hash['name']
+        rule  = retrieve_rule hash['name']
 
         # create a new facts array
         facts = []
@@ -381,6 +387,28 @@ module PKT
     end
 
     private
+
+    # encrypt string using secret key
+    def encrypt(string)
+
+      # get the message encryptor
+      encryptor = ActiveSupport::MessageEncryptor.new(@secret_key)
+
+      # encrypt the string
+      encryptor.encrypt_and_sign(string)
+
+    end
+
+    # decrypt string using secret key
+    def decrypt(string)
+
+      # get the message decryptor
+      decryptor = ActiveSupport::MessageEncryptor.new(@secret_key)
+
+      # decrypt the string
+      decryptor.decrypt_and_verify(string)
+
+    end
 
     # get the facts posted
     def facts_from_params(params)
@@ -461,7 +489,7 @@ module PKT
       if value.is_a? String
 
         # replace each fact name with the value of that fact
-        k = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
+        k     = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
 
           # get the fact from the knowledge base
           fact = retrieve_fact match
@@ -545,22 +573,39 @@ module PKT
 
     end
 
-    # TODO: what about floats?
-    def convert_variable var
+    # converts the variable into proper type
+    def convert_variable(var)
 
-      # if it returns nil, it is a string
-      if /^[0-9]+$/.match(var).nil?
+      if var.is_a?(String)
 
+        case
+          when !!/^[0-9]+$/.match(var)
+
+            # convert to an integer
+            Integer var
+
+          when !!/^[0-9.]+$/.match(var)
+
+            # convert to a float
+            Float var
+
+          else
+
+            # otherwise just return the var
+            var
+        end
+
+      else
+
+        # not a string, return the var
         var
-
-      else # otherwise it is a integer, so convert to integer
-
-        var.to_i
 
       end
 
     end
 
+    # return the appropriate operation
+    # Ruleby overrides the comparison operators so this returns a Ferrari object
     def operation(var1, operator, var2)
 
       case operator
@@ -580,6 +625,7 @@ module PKT
 
     end
 
+    # check to see if variable is a fact
     def is_fact? variable
 
       # only works on strings
@@ -593,30 +639,6 @@ module PKT
       false
 
     end
-
-    #def assert(knowledge_base)
-    #
-    #  # evaluate the value of the fact, can contain arithmetic
-    #  if @value.is_a? String
-    #
-    #    k = @value.gsub(/\$[a-zA-Z0-9]+/) { |match|
-    #
-    #      # get the fact from the knowledge base
-    #      fact = knowledge_base.retrieve_fact match
-    #
-    #      # return the value of the fact
-    #      fact.value
-    #
-    #    }
-    #
-    #
-    #    @value = eval(k)
-    #
-    #  end
-    #
-    #  knowledge_base.assert self
-    #
-    #end
 
   end
 

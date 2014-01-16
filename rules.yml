@@ -8,17 +8,26 @@ rule1:
 
   $getal2: $getal + 3
 
+rul2:
+  all:
+    - has($getal2)
+
+  "Nog een getal":
+    text: $getal3
+
+  $getal4: $getal3 + $getal2
+
 result1:
 
   all:
-    - greater($getal2, 5)
+    - greater($getal4, 5)
 
   goal: "Meer dan 5!"
 
 result2:
 
   all:
-    - less($getal2, 5)
+    - less($getal4, 5)
 
   goal: "Minder dan 5!"
 
