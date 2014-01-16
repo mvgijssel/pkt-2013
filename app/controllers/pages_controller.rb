@@ -34,10 +34,13 @@ class PagesController < ApplicationController
     rescue => e
 
       # define hte error message
-      @error_message = "Error while interacting with the knowledge base: #{e.message}. Current rule is: #{@rule.inspect}"
+      @error_message = "#{e.message}."
 
       # get the triggered rules
       @triggered_rules = k.triggered_rules
+
+      # get the posted rule name
+      @posted_rule = params[:current_rule]
 
       # get all the facts
       @facts = k.facts
