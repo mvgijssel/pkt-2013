@@ -19,7 +19,7 @@ load 'pkt/rule.rb'
 PKT::KnowledgeBase.setup :pkt do |config|
 
   # can be a file or a directory
-  config.yml << "#{Rails.root}/rules.yml"
+  config.yml << "#{Rails.root}/app/rules/testing.yml"
 
   # secret key, created using SecureRandom.uuid
   config.secret = 'f3f41598-e5d9-461e-acf3-2846ba3a3104'
