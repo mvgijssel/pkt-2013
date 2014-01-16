@@ -110,6 +110,8 @@ module PKT
 
         case result[:operation]
 
+          # TODO: refactor the way predicates are added to the system
+
           when 'equals'
             matcher.equals(result[:var1], result[:var2])
 

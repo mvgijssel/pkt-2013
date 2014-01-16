@@ -3,7 +3,18 @@ class PagesController < ApplicationController
   def home
 
     # TODO: this temporarily should be removed when converted to a gem
-    load "#{Rails.root}/lib/pkt_development.rb"
+    if Rails.env.production?
+
+      # load the production files
+      require "#{Rails.root}/lib/pkt_production"
+
+    else
+
+      # load the development files
+      load "#{Rails.root}/lib/pkt_development.rb"
+
+    end
+
 
     # get a knowledge base with specified label
     k = knowledge_base :pkt
