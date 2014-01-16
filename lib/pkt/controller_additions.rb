@@ -24,11 +24,11 @@ module PKT
       # add class level methods
       base.extend ClassMethods
 
-      # after each request reset the knowledge bases
+      # before each request reset the knowledge bases
       # if classes are cached need to manually reset the knowledge base
       if Rails.application.config.cache_classes
 
-        base.send(:after_filter) { |c| PKT::KnowledgeBase.reset }
+        base.send(:before_filter) { |c| PKT::KnowledgeBase.reset }
 
       end
 
