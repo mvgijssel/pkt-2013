@@ -4,9 +4,11 @@ module PKT
 
     class Checkbox < Answer
 
+      def parse_content(content)
 
 
 
+      end
 
     end
 

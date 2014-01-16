@@ -4,7 +4,9 @@ module PKT
 
     class Radio < Answer
 
+      def parse_content(content)
 
+      end
 
     end
 
