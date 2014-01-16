@@ -1,3 +1,6 @@
+load 'pkt/knowledge_base.rb'
+load 'pkt/rule_parser.rb'
+
 load 'pkt/answer.rb'
 load 'pkt/answer/checkbox.rb'
 load 'pkt/answer/radio.rb'
@@ -12,14 +15,11 @@ load 'pkt/fact.rb'
 load 'pkt/matcher.rb'
 load 'pkt/rule.rb'
 
-load 'pkt/knowledge_base.rb'
-load 'pkt/rule_parser.rb'
-
 # the configuration of the knowledge base
 PKT::KnowledgeBase.setup :pkt do |config|
 
   # can be a file or a directory
-  config.yml << "#{Rails.root}/own_rules.yml"
+  config.yml << "#{Rails.root}/rules.yml"
 
   # secret key, created using SecureRandom.uuid
   config.secret = 'f3f41598-e5d9-461e-acf3-2846ba3a3104'

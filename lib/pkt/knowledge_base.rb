@@ -28,6 +28,10 @@ module PKT
       # the argument passed in the block is the KnowledgeBase class
       yield instance(knowledge_base_label)
 
+      # add the rules from the yml files
+      # TODO: the add rules should be called somewhere else
+      instance(knowledge_base_label).add_rules
+
     end
 
     # get the knowledge base with the specified label
@@ -35,6 +39,17 @@ module PKT
 
       # create or retrieve the knownledge base with the specified label
       @@instances[label] ||= KnowledgeBase.new label
+
+    end
+
+    # reset all the knowledge bases
+    def self.reset
+
+      @@instances.each do |key, value|
+
+        value.reset
+
+      end
 
     end
 
@@ -74,16 +89,36 @@ module PKT
       # pass a new engine with name :knowledge_base_engine to the super class
       super KnowledgeBase::engine label
 
-      # instantiate variables
-      @engine_has_matched = false
+      # these only change when new rules are added, so upon initialization / setup
+      # changes ONCE upon starting the server
+      # don't change each request
       @yml_locations      = nil
-
-      @question_rules  = Array.new
-      @result_rules    = Array.new
       @fact_rules      = Array.new
-      @triggered_rules = Array.new
       @start_rules     = Array.new
       @rules           = {}
+
+      # cal the reset method when knowledge base is created
+      # otherwise errors when working from the command line
+      reset
+
+    end
+
+    # function is called when new request starts
+    # otherwise instance variables are kept between requesting causing a lot of errors
+    def reset
+
+      # instantiate variables
+      @engine_has_matched = false
+      @question_rules  = Array.new
+      @result_rules    = Array.new
+      @triggered_rules = Array.new
+
+      # retract all the facts asserted by the request
+      @engine.facts.each do |fact|
+
+        @engine.retract fact
+
+      end
 
     end
 

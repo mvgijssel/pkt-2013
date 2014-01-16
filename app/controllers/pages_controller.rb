@@ -2,25 +2,11 @@ class PagesController < ApplicationController
 
   def home
 
-    # TODO: this temporarily should be removed when converted to a gem
-    if Rails.env.production?
-
-      # load the production files
-      require "#{Rails.root}/lib/pkt_production"
-
-    else
-
-      # load the development files
-      load "#{Rails.root}/lib/pkt_development.rb"
-
-    end
-
+    # load the development files
+    load "#{Rails.root}/lib/pkt_development.rb" if Rails.env.development?
 
     # get a knowledge base with specified label
     k = knowledge_base :pkt
-
-    # add the rules from the yml files
-    k.add_rules
 
     # assert facts from the parameters
     k.update_from_params params

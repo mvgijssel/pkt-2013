@@ -1,3 +1,6 @@
+require 'pkt/knowledge_base'
+require 'pkt/rule_parser'
+
 require 'pkt/answer'
 require 'pkt/answer/checkbox'
 require 'pkt/answer/radio'
@@ -11,9 +14,6 @@ require 'pkt/question'
 require 'pkt/fact'
 require 'pkt/matcher'
 require 'pkt/rule'
-
-require 'pkt/knowledge_base'
-require 'pkt/rule_parser'
 
 # the configuration of the knowledge base
 PKT::KnowledgeBase.setup :pkt do |config|

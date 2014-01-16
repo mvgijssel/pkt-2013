@@ -4,12 +4,6 @@ module PKT
 
     module ClassMethods
 
-      def class_bar
-
-        puts 'class method'
-
-      end
-
     end
 
     module InstanceMethods
@@ -30,9 +24,13 @@ module PKT
       # add class level methods
       base.extend ClassMethods
 
-      # add some methods to the view
-      # only instance methods of the controller are applicable
-      # base.helper_method :instance_bar
+      # after each request reset the knowledge bases
+      # if classes are cached need to manually reset the knowledge base
+      if Rails.application.config.cache_classes
+
+        base.send(:after_filter) { |c| PKT::KnowledgeBase.reset }
+
+      end
 
     end
 
