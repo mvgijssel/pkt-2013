@@ -1,6 +1,6 @@
 module PKT
 
-  class Answer
+  module Answer
 
     def template
 

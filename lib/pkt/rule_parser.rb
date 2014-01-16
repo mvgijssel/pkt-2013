@@ -71,15 +71,15 @@ module PKT
 
                   when 'text'
 
-                    question.answer = TextAnswer.new answer_content
+                    question.answer = Answer::Text.new answer_content
 
                   when 'radio'
 
-                    question.answer = RadioAnswer.new answer_content
+                    question.answer = Answer::Radio.new answer_content
 
                   when 'checkbox'
 
-                    question.answer = CheckboxAnswer.new answer_content
+                    question.answer = Answer::Checkbox.new answer_content
 
                   else
                     raise "Error in rule #{rule_name}: unknown answer method #{answer_method}"

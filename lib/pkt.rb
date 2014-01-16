@@ -1,7 +1,7 @@
 require 'pkt/answer'
-require 'pkt/checkbox_answer'
-require 'pkt/radio_answer'
-require 'pkt/text_answer'
+require 'pkt/answer/checkbox_answer'
+require 'pkt/answer/radio_answer'
+require 'pkt/answer/text_answer'
 
 require 'pkt/controller_additions'
 require 'pkt/model_additions'

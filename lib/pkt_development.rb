@@ -1,7 +1,7 @@
 load 'pkt/answer.rb'
-load 'pkt/checkbox_answer.rb'
-load 'pkt/radio_answer.rb'
-load 'pkt/text_answer.rb'
+load 'pkt/answer/checkbox.rb'
+load 'pkt/answer/radio.rb'
+load 'pkt/answer/text.rb'
 
 load 'pkt/controller_additions.rb'
 load 'pkt/model_additions.rb'

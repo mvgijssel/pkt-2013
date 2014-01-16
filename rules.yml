@@ -2,6 +2,20 @@ rule0:
   "Getal?":
     text: $getal
 
+  "Iets anders":
+    checkbox:
+      $test1: 1
+      $test3: 10
+
+  "Nog iets anders":
+    radio:
+      $test2:
+        10: Aap
+        0: Kerk
+
+  "Hendig":
+    text: $asdssda
+
 rule1:
   all:
     - has($getal)
