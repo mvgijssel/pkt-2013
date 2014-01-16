@@ -8,11 +8,29 @@ class PagesController < ApplicationController
     # get a knowledge base with specified label
     k = knowledge_base :pkt
 
-    # assert facts from the parameters
-    k.update_from_params params
+    begin
 
-    # get the current rule
-    @rule = k.current_rule
+      # assert facts from the parameters
+      k.update_from_params params
+
+    rescue => e
+
+      flash.now[:warning] = "Error in updating the knowledge base from the params: #{e.inspect}"
+
+    end
+
+
+    begin
+
+      # get the current rule
+      @rule = k.current_rule
+
+    rescue => e
+
+      flash.now[:warning] = "Error in getting the current rule from the knowledge base: #{e.inspect}"
+
+    end
+
 
     # if there is no next rule, render result
     if @rule.nil?
