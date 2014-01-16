@@ -47,6 +47,9 @@ GEM
     execjs (2.0.2)
     faker (1.2.0)
       i18n (~> 0.5)
+    foundation-rails (5.0.3.0)
+      railties (>= 3.1.0)
+      sass (>= 3.2.0)
     hike (1.2.3)
     i18n (0.6.9)
     jbuilder (1.5.3)
@@ -133,6 +136,7 @@ DEPENDENCIES
   binding_of_caller (= 0.7.2)
   coffee-rails (~> 4.0.0)
   faker (= 1.2.0)
+  foundation-rails (>= 5.0.3.0)
   jbuilder (~> 1.2)
   jquery-rails
   meta_request (= 0.2.8)

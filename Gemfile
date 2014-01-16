@@ -28,8 +28,7 @@ gem 'jquery-rails'
 gem 'jbuilder', '~> 1.2'
 
 # foundation layout framework
-# current version of the foundation gem doesn't work with rails / turbolinks
-# gem 'foundation-rails'
+gem 'foundation-rails', '>= 5.0.3.0'
 
 # ruleby rule engine
 gem 'ruleby'

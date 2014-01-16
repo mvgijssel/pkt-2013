@@ -14,10 +14,11 @@
 //= require jquery_ujs
 //= require vendor/modernizr
 //= require foundation
-
 //= require_self
 
 $(document).ready(function()
 {
     $(document).foundation();
 });
+
+$(function(){ $(document).foundation(); });
