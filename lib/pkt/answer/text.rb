@@ -1,16 +1,20 @@
 module PKT
 
-  module Answer
+  class Answer
 
-    class Text
+    class Text < Answer
 
-      include PKT::Answer
+      # sets the content
+      def parse_content(content)
 
-      attr_accessor :fact_name
+        add_option content
 
-      def initialize(content)
+      end
 
-        self.fact_name = content
+      # overrides the module validation
+      def validate(content)
+
+         false
 
       end
 

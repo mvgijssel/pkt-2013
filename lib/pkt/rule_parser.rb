@@ -49,45 +49,39 @@ module PKT
               # add the matcher to the rule
               rule.matcher = matcher
 
-            when name == 'goal' # it's a goal -> can't contain questions AND facts
+            # it's a goal -> can't contain questions AND facts
+            when name == 'result'
 
               # fill in the goal variable
               rule.goal = value
 
-            when name[0] == '$' # it's a fact
+            # it's a fact
+            when name[0] == '$'
 
               # create a fact and add it to the rule
               rule.facts << knowledge_base.create_fact(name, value)
 
-            else # it's a question
+            # when value has iterable content, it's a question
+            when value.respond_to?(:each)
 
               # create a new question
-              question = Question.new name
+              question = Question.new name, rule
 
               # question can only contain single answer method
               value.each do |answer_method, answer_content|
 
-                case answer_method
-
-                  when 'text'
-
-                    question.answer = Answer::Text.new answer_content
-
-                  when 'radio'
-
-                    question.answer = Answer::Radio.new answer_content
-
-                  when 'checkbox'
-
-                    question.answer = Answer::Checkbox.new answer_content
-
-                  else
-                    raise "Error in rule #{rule_name}: unknown answer method #{answer_method}"
-                end
+                # create the answer object on the question
+                question.answer = answer_class_from_string answer_method, answer_content, question
 
               end
 
+              # add the question to the rule
               rule.questions << question
+
+            # it's unknown content
+            else
+
+              raise "Error in rule #{rule_name}: unknown definition '#{name}: #{value}'. Wrong format question?"
 
           end
 
@@ -101,6 +95,25 @@ module PKT
     end
 
     private
+
+    def self.answer_class_from_string(class_name, arguments, question)
+
+      begin
+
+        # get the class
+        clazz = "PKT::Answer::#{class_name.camelize}".constantize
+
+      rescue => e
+
+        raise "Error in rule #{question.rule.name}: Couldn't find answer class '#{class_name}'."
+
+      end
+
+      # create a new class
+      # noinspection RubyArgCount
+      clazz.new arguments, question
+
+    end
 
     def self.add_conditions_to_matcher(conditions, matcher)
 

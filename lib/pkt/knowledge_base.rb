@@ -248,6 +248,9 @@ module PKT
         # get the posted facts
         posted_facts = facts_from_params params
 
+        # check to see if the posted facts are valid
+
+
         # prepend the submitted facts to the posted rule
         # prepend causes the submitted facts to be processed earlier
         # so rule facts can have submitted facts in their equasion

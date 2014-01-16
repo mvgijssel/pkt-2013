@@ -2,11 +2,12 @@ module PKT
 
   class Question
 
-    attr_accessor :content, :answer
+    attr_accessor :content, :answer, :rule
 
-    def initialize(content)
+    def initialize(content, rule)
 
-      self.content = content
+      @content = content
+      @rule = rule
 
     end
 
