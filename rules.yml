@@ -20,7 +20,7 @@ rule1:
   all:
     - has($getal)
 
-  $getal2: $getal + 3
+  $getal2: $bestaat_niet + 3
 
 rul2:
   all:

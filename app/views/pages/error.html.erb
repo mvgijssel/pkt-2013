@@ -1,0 +1,34 @@
+<h1>Something went wrong!</h1>
+
+<h5>Message:</h5>
+<p><%= @error_message %></p>
+<br />
+
+<h5>Triggered rules:</h5>
+<ol>
+  <% @triggered_rules.each do |rule| %>
+
+    <li><%= rule.name %></li>
+    <br />
+
+  <% end %>
+</ol>
+
+<h5>Asserted Facts</h5>
+<ol>
+  <% @facts.each do |fact| %>
+
+      <li><%= "#{fact.name}: #{fact.value}" %></li>
+      <br />
+
+  <% end %>
+</ol>
+
+<h5>Trace:</h5>
+<ol>
+  <% @error_backtrace.each do |line| %>
+
+      <li><%= line %></li>
+      <br />
+  <% end %>
+</ol>

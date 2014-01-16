@@ -103,6 +103,13 @@ module PKT
 
     end
 
+    # get all the asserted facts
+    def facts
+
+      @engine.facts
+
+    end
+
     # function is called when new request starts
     # otherwise instance variables are kept between requesting causing a lot of errors
     def reset
