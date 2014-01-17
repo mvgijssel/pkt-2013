@@ -92,10 +92,10 @@ module PKT
       # these only change when new rules are added, so upon initialization / setup
       # changes ONCE upon starting the server
       # don't change each request
-      @yml_locations      = nil
-      @fact_rules      = Array.new
-      @start_rules     = Array.new
-      @rules           = {}
+      @yml_locations = nil
+      @fact_rules = Array.new
+      @start_rules = Array.new
+      @rules = {}
 
       # cal the reset method when knowledge base is created
       # otherwise errors when working from the command line
@@ -104,7 +104,7 @@ module PKT
     end
 
     # get all the asserted facts
-    def facts
+    def answered_facts
 
       @engine.facts
 
@@ -116,8 +116,8 @@ module PKT
 
       # instantiate variables
       @engine_has_matched = false
-      @question_rules  = Array.new
-      @result_rules    = Array.new
+      @question_rules = Array.new
+      @result_rules = Array.new
       @triggered_rules = Array.new
 
       # retract all the facts asserted by the request
@@ -179,13 +179,13 @@ module PKT
         else
 
           # get the matcher
-          matcher      = rule_object.matcher
+          matcher = rule_object.matcher
 
           # get the matcher type (any / all)
           matcher_type = matcher.type
 
           # generate the ruleby conditions based on the matcher conditions
-          conditions   = create_conditions matcher.conditions
+          conditions = create_conditions matcher.conditions
 
           # switch statement for the matcher type
           case matcher_type
@@ -243,18 +243,15 @@ module PKT
       if params.has_key? :current_rule
 
         # get the posted rule
-        posted_rule  = retrieve_rule(params[:current_rule])
+        posted_rule = retrieve_rule(params[:current_rule])
 
-        # get the posted facts
-        posted_facts = facts_from_params params
-
-        # check to see if the posted facts are valid
-
+        # update the questions from the params
+        updated_facts = posted_rule.update_from_params params
 
         # prepend the submitted facts to the posted rule
         # prepend causes the submitted facts to be processed earlier
         # so rule facts can have submitted facts in their equasion
-        posted_rule.facts.unshift *posted_facts
+        posted_rule.answered_facts.unshift *updated_facts
 
         # trigger the posted rule
         trigger posted_rule
@@ -357,15 +354,15 @@ module PKT
       @triggered_rules.each do |rule|
 
         # create a new hash
-        hash  = {:name => rule.name, :facts => []}
+        hash = {:name => rule.name, :facts => {}}
 
-        # get the facts added by the rule
-        facts = rule.facts
+        # get the facts answered by the rule
+        facts = rule.answered_facts
 
         # iterate all the facts
         facts.each do |fact|
 
-          hash[:facts] << {:name => fact.name, :value => fact.value}
+          hash[:facts][fact.name] = fact.value
 
         end
 
@@ -375,7 +372,7 @@ module PKT
       end
 
       # return the encrypted array
-      string    = array.to_json
+      string = array.to_json
 
       # encrypt the data
       encrypted = encrypt(string)
@@ -386,33 +383,43 @@ module PKT
     def triggered_rules_from_encrypted(encrypted)
 
       # create a new rules array
-      rules  = Array.new
+      rules = Array.new
 
       # decrypt the data
       string = decrypt(encrypted)
 
       # get the array back
-      array  = JSON.parse string
+      array = JSON.parse string
 
       # iterate the array
       array.each do |hash|
 
         # get the rule back
-        rule  = retrieve_rule hash['name']
+        rule = retrieve_rule hash['name']
 
-        # create a new facts array
-        facts = []
+        # update the rule
+        updated_facts = rule.update_from_params hash['facts']
 
-        # retrieve each of the facts
-        hash['facts'].each do |fact|
+        # update the answered facts already on the rule, the facts defined outside a question
+        rule.answered_facts.each do |fact|
 
-          # create a new fact for each
-          facts << create_fact(fact['name'], fact['value'])
+          # check if the posted hash has the fact in the answered rule
+          if hash['facts'].has_key? fact.name
+
+            # update the fact with the value
+            fact.value = hash['facts'][fact.name]
+
+          else
+
+            # trigger error when the fact doesn't exist on the rule
+            raise "Fact with name '#{fact.name}' should have been posted, but doesn't exist."
+
+          end
 
         end
 
-        # replace the facts on the rule
-        rule.facts = facts
+        # add the facts to the rule, order doesn't matter because they all don't have facts in them anymore
+        rule.answered_facts.push *updated_facts
 
         # add to the array
         rules << rule
@@ -421,13 +428,6 @@ module PKT
 
       # return the rules array
       rules
-
-    end
-
-    # method for creating facts
-    def create_fact(name, value)
-
-      Fact.new name, convert_variable(value)
 
     end
 
@@ -455,26 +455,6 @@ module PKT
 
     end
 
-    # get the facts posted
-    def facts_from_params(params)
-
-      facts = []
-
-      params.each do |name, value|
-
-        if is_fact? name
-
-          facts << create_fact(name, value)
-
-        end
-
-      end
-
-      # return facts
-      facts
-
-    end
-
     # gets called when the conditions of a rule match
     def rule_handler(rule_object)
 
@@ -484,13 +464,13 @@ module PKT
         case
 
           # when there are no questions and no goals
-          when rule_object.questions.empty? && rule_object.goal.nil?
+          when rule_object.questions.empty? && rule_object.result.nil?
 
             # trigger the rule, thus asserting facts and storing in triggered rules
             trigger rule_object
 
           # when the goal is NOT nil
-          when !rule_object.goal.nil?
+          when !rule_object.result.nil?
 
             # add to the result rules
             @result_rules << rule_object
@@ -507,34 +487,16 @@ module PKT
 
     end
 
-    # assert all the facts stored in a rule
-    def assert_facts_from_rule(rule_object)
-
-      # get the facts from the rule
-      facts = rule_object.facts
-
-      # iterate all the facts
-      facts.each do |fact|
-
-        # evaluate fact value
-        # TODO: ONLY evaluate fact when trigger is called on a top level rule fact
-        fact.value = evaluate_fact_value fact.value
-
-        # let the ruleby engine assert the fact
-        @engine.assert fact
-
-      end
-
-    end
-
     # evaluates the value of the fact
-    def evaluate_fact_value(value)
+    def convert_fact_value(value)
+
+      # TODO: check if contains only numbers -> convert to Integer or Float or Fixnum?
 
       # only when the type of the value is a string
       if value.is_a? String
 
         # replace each fact name with the value of that fact
-        k     = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
+        k = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
 
           # get the fact from the knowledge base
           fact = retrieve_fact match
@@ -565,6 +527,25 @@ module PKT
 
         # add the rule to the triggered rules
         @triggered_rules << rule_object
+
+      end
+
+    end
+
+    # assert all the facts stored in a rule
+    def assert_facts_from_rule(rule_object)
+
+      # get the facts from the rule
+      facts = rule_object.answered_facts
+
+      # iterate all the facts
+      facts.each do |fact|
+
+        # TODO: also convert string to int etc here!!!
+        fact.value = convert_fact_value fact.value
+
+        # let the ruleby engine assert the fact
+        @engine.assert fact
 
       end
 

@@ -43,7 +43,7 @@ class PagesController < ApplicationController
       @posted_rule = params[:current_rule]
 
       # get all the facts
-      @facts = k.facts
+      @facts = k.answered_facts
 
       # create a backtrace cleaner
       bc = ActiveSupport::BacktraceCleaner.new

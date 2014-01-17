@@ -6,22 +6,63 @@ module PKT
 
       self.question = question
 
-      @options = Hash.new
+      @facts = Hash.new
 
       parse_content content
 
     end
 
-    def facts
+    # update the stored facts with the answer from the params
+    def update_facts_from_params(params)
 
-      @options
+      # create empty array for the updated facts
+      updated_facts = []
+
+      # iterate all the facts stored by the answer
+      @facts.each do |fact_name, fact|
+
+        # check if the keys exists in the params
+        if params.has_key? fact_name
+
+          # get the posted value of the fact
+          fact_value = params[fact_name]
+
+          # TODO: check if posted value is valid
+
+          # update the value of the fact
+          fact.value = fact_value
+
+          # add the fact to the updated facts array
+          updated_facts << fact
+
+        else
+
+          # all facts should be posted to the application
+          raise "Expected fact with name '#{fact_name}' to be posted, but doesn't exist in the posted parameters."
+
+        end
+
+      end
+
+      # return the facts
+      updated_facts
 
     end
 
+    def facts
+
+      @facts
+
+    end
+
+    # called when answer render only expects one fact
     def fact
 
       # return the first (and only?) fact
-       @options.first
+      fact_name, fact = @facts.first
+
+      # return the fact
+      fact
 
     end
 
@@ -39,32 +80,28 @@ module PKT
 
     def parse_content(value)
 
-      raise "The content=(value) should be overridden by the subclass"
+      raise "The 'parse_content(value)' method should be overridden by the subclass"
 
     end
 
-    def add_option(fact_name, label = nil, value = nil)
+    def add_fact(fact_name, value = nil, label = nil)
 
-      unless @options.has_key?(fact_name)
+      # TODO: when the value can be anything, needs validation!
 
-        # create a new array only when the key doesn't exist
-        @options[fact_name] = []
+      # when storing fact with the same name, this adds possible values to the fact
+      if @facts.has_key?(fact_name)
 
-      end
+        # retrieve the fact
+        fact = @facts[fact_name]
 
-      unless label.nil? && value.nil?
+        # add possible value to the fact
+        # TODO: make difference to actual value and possible value
 
-        # create a new hash
-        data = {}
+      else
 
-        # set the label attribute
-        data[:label] = label unless label.nil?
-
-        # set the value attribute
-        data[:value] = value unless value.nil?
-
-        # add with the fact
-        @options[fact_name] << data
+        # TODO: what to do with the label?
+        # create and store a new fact
+        @facts[fact_name] = Fact.new(fact_name, value)
 
       end
 

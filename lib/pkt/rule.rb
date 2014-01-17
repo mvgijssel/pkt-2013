@@ -6,13 +6,34 @@ module PKT
 
   class Rule
 
-    attr_accessor :name, :questions, :goal, :facts
+    attr_accessor :name, :questions, :result, :answered_facts
+
+    # update the facts
+    def update_from_params(params)
+
+      # create a new array
+      updated_facts = []
+
+      # update the facts in the answer of the posted rule
+      @questions.each do |question|
+
+        # update the facts associated with the answer
+        updated_facts.push *question.answer.update_facts_from_params(params)
+
+      end
+
+      # return the updated facts
+      updated_facts
+
+    end
 
     def initialize(name)
 
       self.name      = name.to_sym
       self.questions = Array.new
-      self.facts     = Array.new
+
+
+      self.answered_facts     = Array.new
 
     end
 

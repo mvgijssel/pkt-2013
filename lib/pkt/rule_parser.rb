@@ -24,6 +24,8 @@ module PKT
           case
 
             when value.nil?
+
+              # raise error when the object doesn't contain anything
               raise "Error in rule #{rule_name}: the content of #{name} is nill"
 
             when name == 'any'
@@ -53,13 +55,13 @@ module PKT
             when name == 'result'
 
               # fill in the goal variable
-              rule.goal = value
+              rule.result = value
 
             # it's a fact
             when name[0] == '$'
 
               # create a fact and add it to the rule
-              rule.facts << knowledge_base.create_fact(name, value)
+              rule.answered_facts << Fact.new(name, value)
 
             # when value has iterable content, it's a question
             when value.respond_to?(:each)
@@ -123,7 +125,7 @@ module PKT
 
         case result[:operation]
 
-          # TODO: refactor the way predicates are added to the system
+          # TODO: change the way predicates are added to the system
 
           when 'equals'
             matcher.equals(result[:var1], result[:var2])

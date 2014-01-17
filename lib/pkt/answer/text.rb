@@ -7,7 +7,9 @@ module PKT
       # sets the content
       def parse_content(content)
 
-        add_option content
+        # add a fact with only a name, so the value can be anything
+        # the content contains the fact name
+        add_fact content
 
       end
 
