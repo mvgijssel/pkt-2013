@@ -107,12 +107,14 @@ module PKT
 
     end
 
+    # get the template name to render
     def template
 
       template = self.class.to_s.underscore
 
     end
 
+    # validate
     def validate(content)
 
       # no validation, always true

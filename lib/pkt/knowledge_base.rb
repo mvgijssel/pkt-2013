@@ -81,6 +81,9 @@ module PKT
     # secret key for encryption / decryption
     attr_accessor :secret_key
 
+    # initial rules
+    attr_accessor :initial_rules
+
     public
 
     # create a new knowledge base
@@ -97,9 +100,11 @@ module PKT
       @start_rules = Array.new
       @rules = {}
 
-      # cal the reset method when knowledge base is created
-      # otherwise errors when working from the command line
-      reset
+      # instantiate variables
+      @engine_has_matched = false
+      @question_rules = Array.new
+      @result_rules = Array.new
+      @triggered_rules = Array.new
 
     end
 
@@ -126,6 +131,33 @@ module PKT
         @engine.retract fact
 
       end
+
+      @rules.each do |rule_name, rule|
+
+        # rule.
+
+      end
+
+      # if initial rules is nil, this is the first time reset is called, copy the rules to initial rules
+      # which classes and which instance variables get modified?
+      #
+      # The facts on the rules get modified to reflect the new data
+      # Rule > Question > Answer > @facts
+      #
+      # The answered facts get updated with the new data, and other facts are added
+      # Rule > @answered_facts
+      #
+      # Flag to determine of the matching has already been called
+      # KnowledgeBase > @engine_has_matched
+      #
+      # Question rules gets filled with all the rules that can be asked next
+      # KnowledgeBase > @question_rules
+      #
+      # result rules gets filled with results that match the current facts
+      # KnowledgeBase > @result_rules
+      #
+      # triggered rules contains all the rules triggered, and thus all the facts asserted
+      # KnowledgeBase > @triggered_rules
 
     end
 
@@ -221,6 +253,10 @@ module PKT
 
     end
 
+    # TODO: should be a single statement to update the knowledge base with new data
+    # TODO: after the update statement different current_rule / result apply
+    # TODO: knowledge base can be reset at any time
+
     # update knowledge base from the params hash
     def update_from_params(params)
 
@@ -306,8 +342,12 @@ module PKT
 
       # start the matching of the ruleby engine if not yet called
       unless @engine_has_matched
-        @engine.match
-        @engine_has_matched = true
+
+        # TODO: should match the engine / all possible rules instead of raise error
+        raise "Knowledge base hasn't been updated"
+
+        #@engine.match
+        #@engine_has_matched = true
       end
 
       # return the result array
@@ -419,6 +459,7 @@ module PKT
         end
 
         # add the facts to the rule, order doesn't matter because they all don't have facts in them anymore
+        # TODO: because of class caching, answered facts get duplicated here. Think of a way the reset method can help
         rule.answered_facts.push *updated_facts
 
         # add to the array
@@ -542,6 +583,7 @@ module PKT
       facts.each do |fact|
 
         # TODO: also convert string to int etc here!!!
+        # tha value gets updated here, so needs to be reset
         fact.value = convert_fact_value fact.value
 
         # let the ruleby engine assert the fact

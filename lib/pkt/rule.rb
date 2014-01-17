@@ -4,6 +4,8 @@ module PKT
   # TODO: goals cannot have questions
   # TODO: rule needs to have at least 1 fact OR 1 goal OR 1 question
 
+
+
   class Rule
 
     attr_accessor :name, :questions, :result, :answered_facts

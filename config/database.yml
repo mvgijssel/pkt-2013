@@ -58,9 +58,14 @@ test:
   password:
 
 production:
-  adapter: postgresql
-  encoding: unicode
-  database: pkt-2013_production
+  adapter: sqlite3
+  database: db/development.sqlite3
   pool: 5
-  username: pkt-2013
-  password:
+  timeout: 5000
+
+#  adapter: postgresql
+#  encoding: unicode
+#  database: pkt-2013_production
+#  pool: 5
+#  username: pkt-2013
+#  password:
