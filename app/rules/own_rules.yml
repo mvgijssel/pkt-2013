@@ -88,50 +88,50 @@ rule7:
 
   $prognose: $prognose * 0.9^($tempHist-$temp)  
 
-#Goals situatie 1
-goal1:
+#results situatie 1
+result1:
   all:
     - equals($situation, 1)
     - less($prognose, 2)
 
-  goal: "Geen compressie nodig op dit moment."
+  result: "Geen compressie nodig op dit moment."
 
-goal2:
+result2:
   all:
     - equals($situation, 1)
     - equals($middagPiek, 0)
 
-  goal: "Geen compressie nodig op dit moment."
+  result: "Geen compressie nodig op dit moment."
 
-goal3:
+result3:
   all:
     - equals($situation, 1)
     - equals($middagPiek, 1)
-  goal: "Zet Oldenboorn aan"
+  result: "Zet Oldenboorn aan"
 
-goal4:
+result4:
   all:
     - equals($situation, 1)
     - equals($middagPiek, 1)
     - equals($hgas, 1)
 
-  goal: "Zet Wieringermeer aan"
+  result: "Zet Wieringermeer aan"
 
-goal5:
+result5:
   all:
     - equals($situation, 1)
     - less($druk, 53)
     - equals($hgas, 0)
 
-  goal: "Zet Oldenboorn aan"
+  result: "Zet Oldenboorn aan"
 
-goal6:
+result6:
   all:
     - equals($situation, 1)
     - less($druk, 53)
     - equals($hgas, 1)
 
-  goal: "Zet Wieringermeer aan"
+  result: "Zet Wieringermeer aan"
 # Vragen situatie 2
 rule8:
   all:
@@ -165,8 +165,8 @@ rule9:
         2: Groot
 
 # Regels situatie 2
-# Goals  situatie 2
-goal7:
+# results  situatie 2
+result7:
   all:
     - equals($situation, 2)
     - equals($Old, false)
@@ -175,9 +175,9 @@ goal7:
     - equals($compNodig, 1)
     - equals($Alk, 1)
 
-  goal: "Zet Wieringermeer aan"
+  result: "Zet Wieringermeer aan"
 
-goal8:
+result8:
   all:
     - equals($situation, 2)
     - equals($Old, false)
@@ -186,9 +186,9 @@ goal8:
     - equals($Alk, 0)
     - equals($compGrootte, 1)
 
-  goal: "Zet Wieringermeer aan"
+  result: "Zet Wieringermeer aan"
 
-goal9:
+result9:
   all:
     - equals($situation, 2)
     - equals($Old, false)
@@ -197,7 +197,7 @@ goal9:
     - equals($Alk, 0)
     - equals($compGrootte, 2)
 
-  goal: "Zet Beverwijk aan"
+  result: "Zet Beverwijk aan"
 
 # Vragen situatie 3
 rule10:
@@ -215,13 +215,13 @@ rule11:
 
   $prognose: $prognose * 1.2 ^ ($drop/3)
 
-# Goals situatie 3
-goal10:
+# results situatie 3
+result10:
   all:
     - equals($situation, 3)
     - less($prognose, 2)
 
-  goal: "Geen compressie nodig op dit moment."
+  result: "Geen compressie nodig op dit moment."
 
 # Regels situatie 3 (verdere vragen)
 rule12:
@@ -237,8 +237,8 @@ rule12:
       Wie: Wieringermeer
       Bev: Beverwijk
 
-# Goals situatie 3 (verdere goals)
-goal11:
+# results situatie 3 (verdere results)
+result11:
   all:
     - equals($situation, 3)
     - less($drukAbb, 49)
@@ -246,9 +246,9 @@ goal11:
     - equals($Wie, false)
     - equals($Bev, false)
 
-  goal: "Zet Wieringermeer aan." 
+  result: "Zet Wieringermeer aan." 
 
-goal12:
+result12:
   all:
     - equals($situation, 3)
     - less($drukAbb, 49)
@@ -256,7 +256,7 @@ goal12:
     - equals($Wie, false)
     - equals($Bev, false)
 
-  goal: "Zet Oldenboorn aan." 
+  result: "Zet Oldenboorn aan." 
 
 # Vragen situatie 4
 rule13:
@@ -269,20 +269,20 @@ rule13:
         0: Nee
         1: Ja
 
-#Goals situatie 4
-goal13:
+#results situatie 4
+result13:
   all:
     - equals($situation, 4)
     - equals($buffer, 0)
 
-  goal: "Zet alle huidige compressie naar het minimum"
+  result: "Zet alle huidige compressie naar het minimum"
 
-goal14:
+result14:
   all:
     - equals($situation, 4)
     - equals($buffer, 1)
 
-  goal: "Zet alle compressie uit"
+  result: "Zet alle compressie uit"
 
 #Vragen situatie 5
 rule14:
@@ -327,15 +327,15 @@ rule16:
         0: Nee
         1: Ja
 
-# Goals situatie 5
-goal15:
+# results situatie 5
+result15:
   all:
     - equals($situation, 5)
     - equals($overkill, 1)
 
-  goal: "Zet alle compressie-stations aan."
+  result: "Zet alle compressie-stations aan."
 
-goal16:
+result16:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
@@ -343,9 +343,9 @@ goal16:
     - equals($Wie, false)
     - equals($Bev, false)
 
-  goal: "Zet Oldenboorn uit en Wieringermeer aan."
+  result: "Zet Oldenboorn uit en Wieringermeer aan."
 
-goal17:
+result17:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
@@ -353,19 +353,19 @@ goal17:
     - equals($Wie, false)
     - equals($Bev, true)
 
-  goal: "Zet Beverwijk uit en Wieringermeer aan."
+  result: "Zet Beverwijk uit en Wieringermeer aan."
 
-goal18:
+result18:
   all:
     - equals($situation, 5)
     - equals($wierAan, 0)
 
-  goal: "Zet Wieringermeer en Beverwijk aan."
+  result: "Zet Wieringermeer en Beverwijk aan."
 
-goal19:
+result19:
   all:
     - equals($situation, 5)
     - equals($wierAan, 1)
 
-  goal: "Zet Wieringermeer aan."
+  result: "Zet Wieringermeer aan."
 

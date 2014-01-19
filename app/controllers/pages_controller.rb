@@ -31,30 +31,41 @@ class PagesController < ApplicationController
 
       end
 
+    rescue ArgumentError => e
+
+      # get the current rule
+      @rule = k.current_rule
+
+      # create a flash message
+      flash.now[:warning] = e.message
+
+      # render the rule page
+      render :rule
+
     rescue => e
 
       # define hte error message
-      @error_message = "#{e.message}."
+      @error_message   = "#{e.message}."
 
       # get the triggered rules
       @triggered_rules = k.triggered_rules
 
       # get the posted rule name
-      @posted_rule = params[:current_rule]
+      @posted_rule     = params[:current_rule]
 
       # get all the facts
-      @facts = k.answered_facts
+      @facts           = k.answered_facts
 
       # create a backtrace cleaner
-      bc = ActiveSupport::BacktraceCleaner.new
+      bc               = ActiveSupport::BacktraceCleaner.new
 
       # remove the full paths from the backtrace
-      bc.add_filter{ |line| line.sub(Rails.root.to_s, '') }
+      bc.add_filter { |line| line.sub(Rails.root.to_s, '') }
 
       # remove all the lines that do not start with /app or /lib
-      bc.add_silencer{ |line| line !~ /(^\/app)|(^\/lib)/ }
+      bc.add_silencer { |line| line !~ /(^\/app)|(^\/lib)/ }
 
-      # clean the backtrace up
+                                               # clean the backtrace up
       @error_backtrace = bc.clean(e.backtrace) # will strip the Rails.root prefix and skip any lines from mongrel or rubygems
 
       # render the error page

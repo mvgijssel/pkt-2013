@@ -131,27 +131,6 @@ module PKT
 
       end
 
-      # if initial rules is nil, this is the first time reset is called, copy the rules to initial rules
-      # which classes and which instance variables get modified?
-      #
-      # The facts on the rules get modified to reflect the new data
-      # Rule > Question > Answer > @facts
-      #
-      # The answered facts get updated with the new data, and other facts are added
-      # Rule > @answered_facts
-      #
-      # Flag to determine of the matching has already been called
-      # KnowledgeBase > @engine_has_matched
-      #
-      # Question rules gets filled with all the rules that can be asked next
-      # KnowledgeBase > @question_rules
-      #
-      # result rules gets filled with results that match the current facts
-      # KnowledgeBase > @result_rules
-      #
-      # triggered rules contains all the rules triggered, and thus all the facts asserted
-      # KnowledgeBase > @triggered_rules
-
     end
 
     # add one or multiple yml locations
@@ -452,7 +431,7 @@ module PKT
         end
 
         # add the facts to the rule, order doesn't matter because they all don't have facts in them anymore
-        # TODO: because of class caching, answered facts get duplicated here. Think of a way the reset method can help
+        # TODO: check if answered_facts are updated properly -> no memory leaks?
         rule.answered_facts.push *updated_facts
 
         # add to the array

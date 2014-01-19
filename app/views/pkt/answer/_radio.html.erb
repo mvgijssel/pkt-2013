@@ -1,6 +1,11 @@
-<% answer.options.each do |value, label| %>
+<%
 
-    <%= radio_button_tag(answer.fact_name, value) %>
-    <%= label_tag("#{answer.fact_name}_#{value}", label) %>
+   fact = answer.fact
+   fact.possible_values.each_with_index do |option, n|
+
+%>
+
+    <%= radio_button_tag(fact.name, option[:value], n == 0) %>
+    <%= label_tag("#{fact.name}_#{option[:value]}", option[:label]) %>
 
 <% end %>

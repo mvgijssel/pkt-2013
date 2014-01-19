@@ -1,5 +1,6 @@
 module PKT
 
+  # TODO: only reset HASH / ARRAY and normal datatypes
   module Resettable
 
     mattr_accessor :objects

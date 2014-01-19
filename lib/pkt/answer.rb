@@ -27,10 +27,35 @@ module PKT
           # get the posted value of the fact
           fact_value = params[fact_name]
 
-          # TODO: check if posted value is valid
+          case
 
-          # update the value of the fact
-          fact.value = fact_value
+            # should run validation method
+            when fact.value.nil? && fact.possible_values.empty?
+
+              # validate the value
+              if validate fact_value
+
+                # validation passes, store the value
+                fact.value = fact_value
+
+              else
+
+                # validation doesn't pass, throw error
+                raise ArgumentError, "The value '#{fact_value}' isn't a valid input for question '#{question.content}''"
+
+              end
+
+            when fact.value.nil? && fact.possible_values.count > 0
+
+              # TODO: check the value against the possible values
+              fact.value = fact_value
+
+            else
+              # just save it
+              # update the value of the fact
+              fact.value = fact_value
+
+          end
 
           # add the fact to the updated facts array
           updated_facts << fact
@@ -94,14 +119,26 @@ module PKT
         # retrieve the fact
         fact = @facts[fact_name]
 
-        # add possible value to the fact
-        # TODO: make difference to actual value and possible value
+        unless fact.possible_values.count > 0
+
+          # add the current value and label
+          fact.possible_values << {:value => fact.value, :label => fact.label}
+
+          # set the current value to nil
+          fact.value = nil
+
+          # set the label to nil
+          fact.label = nil
+
+        end
+
+        # add the value and label to the possible values
+        fact.possible_values << {:value => value, :label => label}
 
       else
 
-        # TODO: what to do with the label?
         # create and store a new fact
-        @facts[fact_name] = Fact.new(fact_name, value)
+        @facts[fact_name] = Fact.new(fact_name, value, label)
 
       end
 
@@ -118,7 +155,7 @@ module PKT
     def validate(content)
 
       # no validation, always true
-      true
+      raise "Validate method should be implemented by subclass"
 
     end
 

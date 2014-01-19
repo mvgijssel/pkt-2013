@@ -20,7 +20,7 @@ require 'pkt/rule'
 PKT::KnowledgeBase.setup :pkt do |config|
 
   # can be a file or a directory
-  config.yml << "#{Rails.root}/app/rules/pkt-2013.yml"
+  config.yml << "#{Rails.root}/app/rules/own_rules.yml"
 
   # secret key, created using SecureRandom.uuid
   config.secret = 'f3f41598-e5d9-461e-acf3-2846ba3a3104'

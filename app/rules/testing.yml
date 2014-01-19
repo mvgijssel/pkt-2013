@@ -1,27 +1,32 @@
 rule0:
 
   "Getal?":
-    text: $getal1
+    radio:
+      $getal1:
+        0: 0
+        1: 1
+        2: 2
 
-  $calc1: $getal1 + 2
+  "Shine":
+    text: $shine
 
-rule1:
+  "Kerk":
+    checkbox:
+      $test: Test
+      $bar: Bar
 
-  "Nog een getal?":
-    text: $getal2
-
-  $calc2: $getal2 - $calc1
+  $calc1: $getal1 + $shine
 
 result1:
 
   all:
-    - less($calc2, 5)
+    - less($calc1, 5)
 
   result: "Minder dan 5"
 
 result2:
 
   all:
-    - greater($calc2, 5)
+    - greater($calc1, 4)
 
   result: "Meer dan 5"

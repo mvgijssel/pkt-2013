@@ -16,7 +16,8 @@ module PKT
       # overrides the module validation
       def validate(content)
 
-         false
+        # return if content contains only numbers
+        content =~ /^[0-9]+$/
 
       end
 
