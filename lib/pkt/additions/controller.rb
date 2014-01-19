@@ -24,8 +24,8 @@ module PKT
       # if classes are cached need to manually reset the knowledge base
       if Rails.application.config.cache_classes
 
-        base.send(:before_filter) { |c| PKT::Resettable.restore }
-        base.send(:before_filter) { |c| PKT::KnowledgeBase.reset }
+        #base.send(:before_filter) { |c| PKT::Resettable.restore }
+        #base.send(:before_filter) { |c| PKT::KnowledgeBase.reset }
 
       end
 

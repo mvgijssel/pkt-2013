@@ -16,7 +16,7 @@ module PKT
     extend Ruleby
 
     # make the class resettable
-    include Resettable
+    #include Resettable
 
     # cattr is class level variables
     # mattr is module level variables
@@ -301,6 +301,7 @@ module PKT
         end
 
         # match the rules using the ruleby engine
+        # TODO: still causes memory leak when cached as class and required by application controller
         @engine.match
 
         # set the matched flag
@@ -560,13 +561,17 @@ module PKT
 
         # TODO: also convert string to int etc here!!!
         # tha value gets updated here, so needs to be reset
+
+
+        # something can crash during conversion
         fact.value = convert_fact_value fact.value
+
 
         # if already exist, update fact
         if @has_asserted.has_key? fact.name
 
           # update the fact
-          already_asserted = @has_asserted[fact.name]
+          already_asserted       = @has_asserted[fact.name]
 
           # update the already asserted fact
           already_asserted.value = fact.value

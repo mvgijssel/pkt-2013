@@ -4,6 +4,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   # load the production files
-  require "#{Rails.root}/lib/pkt_production" unless Rails.env.development?
+  # require "#{Rails.root}/lib/pkt_production" unless Rails.env.development?
 
 end
