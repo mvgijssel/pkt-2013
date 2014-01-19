@@ -15,3 +15,39 @@
     <p>Alle mogelijke regels zijn al behandeld en geen enkel doel past bij de huidige feiten met hun waarden.</p>
 
 <% end %>
+
+<hr/>
+
+<h1>Besluiten:</h1>
+
+<hr/>
+
+<ul class="no-bullet">
+  <% @triggered_rules.each do |rule| %>
+
+      <li>Regel: <%= rule.name %>
+        <ul>
+          <% rule.questions.each do |question| %>
+
+              <li>
+                <%= question.content %>
+
+                <ul>
+
+                  <% question.answer.facts.each do |fact_name, fact| %>
+
+                    <li><%= "#{fact.name}: #{fact.value}" %></li>
+
+                  <% end %>
+
+                </ul>
+
+              </li>
+
+          <% end %>
+        </ul>
+      </li>
+      <br />
+
+  <% end %>
+</ul>

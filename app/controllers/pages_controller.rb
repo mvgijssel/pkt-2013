@@ -22,6 +22,9 @@ class PagesController < ApplicationController
         # get the possible result rules
         @results = k.result
 
+        # get the triggered rules
+        @triggered_rules = k.triggered_rules
+
         # render the result page
         render :result
 
@@ -31,10 +34,10 @@ class PagesController < ApplicationController
 
       end
 
-    rescue ArgumentError => e
+    rescue ArgumentError => e  # validation error
 
       # get the current rule
-      @rule = k.current_rule
+      @rule               = k.current_rule
 
       # create a flash message
       flash.now[:warning] = e.message

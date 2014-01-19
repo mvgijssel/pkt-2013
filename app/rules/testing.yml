@@ -6,27 +6,36 @@ rule0:
         0: 0
         1: 1
         2: 2
-
   "Shine":
     text: $shine
 
-  "Kerk":
-    checkbox:
-      $test: Test
-      $bar: Bar
+  $calc1: 1
 
-  $calc1: $getal1 + $shine
+rule1:
+
+  all:
+    - has($getal1)
+
+  $calc1: 2
+  $getal2: 2
+
+rule2:
+
+  all:
+    - has($getal2)
+
+  $calc2: $calc1
 
 result1:
 
   all:
-    - less($calc1, 5)
+    - equals($calc1, 1)
 
-  result: "Minder dan 5"
+  result: "Is 1"
 
 result2:
 
   all:
-    - greater($calc1, 4)
+    - equals($calc1, 2)
 
-  result: "Meer dan 5"
+  result: "Is 2"

@@ -89,6 +89,9 @@ module PKT
     # initial rules
     attr_accessor :initial_rules
 
+    # facts which have been asserted
+    attr_accessor :has_asserted
+
     public
 
     # create a new knowledge base
@@ -110,6 +113,7 @@ module PKT
       @question_rules     = Array.new
       @result_rules       = Array.new
       @triggered_rules    = Array.new
+      @has_asserted       = Hash.new
 
     end
 
@@ -558,8 +562,27 @@ module PKT
         # tha value gets updated here, so needs to be reset
         fact.value = convert_fact_value fact.value
 
-        # let the ruleby engine assert the fact
-        @engine.assert fact
+        # if already exist, update fact
+        if @has_asserted.has_key? fact.name
+
+          # update the fact
+          already_asserted = @has_asserted[fact.name]
+
+          # update the already asserted fact
+          already_asserted.value = fact.value
+
+          # modify the fact in the engine
+          @engine.modify already_asserted
+
+        else
+
+          # let the ruleby engine assert the fact
+          @engine.assert fact
+
+          # add the fact to the has asserted
+          @has_asserted[fact.name] = fact
+
+        end
 
       end
 
