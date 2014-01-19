@@ -15,6 +15,9 @@ module PKT
     # add class level methods for creating the Ruleby engine
     extend Ruleby
 
+    # make the class resettable
+    include Resettable
+
     # cattr is class level variables
     # mattr is module level variables
     # stores all the instances of the knowledge base in a hash
@@ -32,6 +35,9 @@ module PKT
       # TODO: the add rules should be called somewhere else
       instance(knowledge_base_label).add_rules
 
+      # TODO: should be rails hook (or something?), after application initializers have been called
+      # only if cache classes in enabled in the configuration / environment
+
     end
 
     # get the knowledge base with the specified label
@@ -42,12 +48,11 @@ module PKT
 
     end
 
-    # reset all the knowledge bases
     def self.reset
 
-      @@instances.each do |key, value|
+      @@instances.each do |label, instance|
 
-        value.reset
+        instance.reset
 
       end
 
@@ -95,16 +100,16 @@ module PKT
       # these only change when new rules are added, so upon initialization / setup
       # changes ONCE upon starting the server
       # don't change each request
-      @yml_locations = nil
-      @fact_rules = Array.new
-      @start_rules = Array.new
-      @rules = {}
+      @yml_locations      = nil
+      @fact_rules         = Array.new
+      @start_rules        = Array.new
+      @rules              = {}
 
       # instantiate variables
       @engine_has_matched = false
-      @question_rules = Array.new
-      @result_rules = Array.new
-      @triggered_rules = Array.new
+      @question_rules     = Array.new
+      @result_rules       = Array.new
+      @triggered_rules    = Array.new
 
     end
 
@@ -119,22 +124,10 @@ module PKT
     # otherwise instance variables are kept between requesting causing a lot of errors
     def reset
 
-      # instantiate variables
-      @engine_has_matched = false
-      @question_rules = Array.new
-      @result_rules = Array.new
-      @triggered_rules = Array.new
-
       # retract all the facts asserted by the request
       @engine.facts.each do |fact|
 
         @engine.retract fact
-
-      end
-
-      @rules.each do |rule_name, rule|
-
-        # rule.
 
       end
 
@@ -211,13 +204,13 @@ module PKT
         else
 
           # get the matcher
-          matcher = rule_object.matcher
+          matcher      = rule_object.matcher
 
           # get the matcher type (any / all)
           matcher_type = matcher.type
 
           # generate the ruleby conditions based on the matcher conditions
-          conditions = create_conditions matcher.conditions
+          conditions   = create_conditions matcher.conditions
 
           # switch statement for the matcher type
           case matcher_type
@@ -279,7 +272,7 @@ module PKT
       if params.has_key? :current_rule
 
         # get the posted rule
-        posted_rule = retrieve_rule(params[:current_rule])
+        posted_rule   = retrieve_rule(params[:current_rule])
 
         # update the questions from the params
         updated_facts = posted_rule.update_from_params params
@@ -394,7 +387,7 @@ module PKT
       @triggered_rules.each do |rule|
 
         # create a new hash
-        hash = {:name => rule.name, :facts => {}}
+        hash  = {:name => rule.name, :facts => {}}
 
         # get the facts answered by the rule
         facts = rule.answered_facts
@@ -412,7 +405,7 @@ module PKT
       end
 
       # return the encrypted array
-      string = array.to_json
+      string    = array.to_json
 
       # encrypt the data
       encrypted = encrypt(string)
@@ -423,19 +416,19 @@ module PKT
     def triggered_rules_from_encrypted(encrypted)
 
       # create a new rules array
-      rules = Array.new
+      rules  = Array.new
 
       # decrypt the data
       string = decrypt(encrypted)
 
       # get the array back
-      array = JSON.parse string
+      array  = JSON.parse string
 
       # iterate the array
       array.each do |hash|
 
         # get the rule back
-        rule = retrieve_rule hash['name']
+        rule          = retrieve_rule hash['name']
 
         # update the rule
         updated_facts = rule.update_from_params hash['facts']
@@ -537,7 +530,7 @@ module PKT
       if value.is_a? String
 
         # replace each fact name with the value of that fact
-        k = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
+        k     = value.gsub(/\$[a-zA-Z0-9]+/) { |match|
 
           # get the fact from the knowledge base
           fact = retrieve_fact match

@@ -2,6 +2,8 @@ module PKT
 
   class Fact
 
+    include Resettable
+
     attr_accessor :name, :value
 
     def initialize(name, value)

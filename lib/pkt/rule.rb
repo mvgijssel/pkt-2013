@@ -8,6 +8,8 @@ module PKT
 
   class Rule
 
+    include Resettable
+
     attr_accessor :name, :questions, :result, :answered_facts
 
     # update the facts
