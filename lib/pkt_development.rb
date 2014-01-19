@@ -1,3 +1,4 @@
+load 'pkt/resettable.rb'
 load 'pkt/knowledge_base.rb'
 load 'pkt/rule_parser.rb'
 

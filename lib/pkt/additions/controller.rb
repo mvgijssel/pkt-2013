@@ -2,37 +2,30 @@ module PKT
 
   module Additions
 
-    module Controller
+    module InstanceMethods
 
-      module ClassMethods
+      def knowledge_base(label)
 
-      end
-
-      module InstanceMethods
-
-        def knowledge_base(label)
-
-          PKT::KnowledgeBase.instance label
-
-        end
+        PKT::KnowledgeBase.instance label
 
       end
 
-      def self.included(base)
+    end
 
-        # include is a private method, so use send method
-        base.send(:include, InstanceMethods)
+    def self.included(base)
 
-        # add class level methods
-        base.extend ClassMethods
+      # include is a private method, so use send method
+      base.send(:include, InstanceMethods)
 
-        # before each request reset the knowledge bases
-        # if classes are cached need to manually reset the knowledge base
-        if Rails.application.config.cache_classes
+      # add class level methods
+      # base.extend ClassMethods
 
-          base.send(:before_filter) { |c| PKT::KnowledgeBase.reset }
+      # before each request reset the knowledge bases
+      # if classes are cached need to manually reset the knowledge base
+      if Rails.application.config.cache_classes
 
-        end
+        base.send(:before_filter) { |c| PKT::Resettable.restore }
+        base.send(:before_filter) { |c| PKT::KnowledgeBase.reset }
 
       end
 
@@ -45,7 +38,7 @@ end
 if defined? ActionController::Base
   ActionController::Base.class_eval do
 
-    include PKT::Additions::Controller
+    include PKT::Additions
 
   end
 end

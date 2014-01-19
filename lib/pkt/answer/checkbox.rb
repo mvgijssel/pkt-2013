@@ -1,16 +1,12 @@
 module PKT
 
-  module Answer
+  class Answer
 
-    class Checkbox
+    class Checkbox < Answer
 
-      include PKT::Answer
+      def parse_content(content)
 
-      attr_accessor :options
 
-      def initialize (content)
-
-        @options = content
 
       end
 

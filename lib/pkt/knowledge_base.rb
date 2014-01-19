@@ -15,6 +15,9 @@ module PKT
     # add class level methods for creating the Ruleby engine
     extend Ruleby
 
+    # make the class resettable
+    include Resettable
+
     # cattr is class level variables
     # mattr is module level variables
     # stores all the instances of the knowledge base in a hash
@@ -32,6 +35,9 @@ module PKT
       # TODO: the add rules should be called somewhere else
       instance(knowledge_base_label).add_rules
 
+      # TODO: should be rails hook (or something?), after application initializers have been called
+      # only if cache classes in enabled in the configuration / environment
+
     end
 
     # get the knowledge base with the specified label
@@ -42,12 +48,11 @@ module PKT
 
     end
 
-    # reset all the knowledge bases
     def self.reset
 
-      @@instances.each do |key, value|
+      @@instances.each do |label, instance|
 
-        value.reset
+        instance.reset
 
       end
 
@@ -81,6 +86,9 @@ module PKT
     # secret key for encryption / decryption
     attr_accessor :secret_key
 
+    # initial rules
+    attr_accessor :initial_rules
+
     public
 
     # create a new knowledge base
@@ -93,18 +101,20 @@ module PKT
       # changes ONCE upon starting the server
       # don't change each request
       @yml_locations      = nil
-      @fact_rules      = Array.new
-      @start_rules     = Array.new
-      @rules           = {}
+      @fact_rules         = Array.new
+      @start_rules        = Array.new
+      @rules              = {}
 
-      # cal the reset method when knowledge base is created
-      # otherwise errors when working from the command line
-      reset
+      # instantiate variables
+      @engine_has_matched = false
+      @question_rules     = Array.new
+      @result_rules       = Array.new
+      @triggered_rules    = Array.new
 
     end
 
     # get all the asserted facts
-    def facts
+    def answered_facts
 
       @engine.facts
 
@@ -114,18 +124,33 @@ module PKT
     # otherwise instance variables are kept between requesting causing a lot of errors
     def reset
 
-      # instantiate variables
-      @engine_has_matched = false
-      @question_rules  = Array.new
-      @result_rules    = Array.new
-      @triggered_rules = Array.new
-
       # retract all the facts asserted by the request
       @engine.facts.each do |fact|
 
         @engine.retract fact
 
       end
+
+      # if initial rules is nil, this is the first time reset is called, copy the rules to initial rules
+      # which classes and which instance variables get modified?
+      #
+      # The facts on the rules get modified to reflect the new data
+      # Rule > Question > Answer > @facts
+      #
+      # The answered facts get updated with the new data, and other facts are added
+      # Rule > @answered_facts
+      #
+      # Flag to determine of the matching has already been called
+      # KnowledgeBase > @engine_has_matched
+      #
+      # Question rules gets filled with all the rules that can be asked next
+      # KnowledgeBase > @question_rules
+      #
+      # result rules gets filled with results that match the current facts
+      # KnowledgeBase > @result_rules
+      #
+      # triggered rules contains all the rules triggered, and thus all the facts asserted
+      # KnowledgeBase > @triggered_rules
 
     end
 
@@ -221,6 +246,10 @@ module PKT
 
     end
 
+    # TODO: should be a single statement to update the knowledge base with new data
+    # TODO: after the update statement different current_rule / result apply
+    # TODO: knowledge base can be reset at any time
+
     # update knowledge base from the params hash
     def update_from_params(params)
 
@@ -243,15 +272,15 @@ module PKT
       if params.has_key? :current_rule
 
         # get the posted rule
-        posted_rule  = retrieve_rule(params[:current_rule])
+        posted_rule   = retrieve_rule(params[:current_rule])
 
-        # get the posted facts
-        posted_facts = facts_from_params params
+        # update the questions from the params
+        updated_facts = posted_rule.update_from_params params
 
         # prepend the submitted facts to the posted rule
         # prepend causes the submitted facts to be processed earlier
         # so rule facts can have submitted facts in their equasion
-        posted_rule.facts.unshift *posted_facts
+        posted_rule.answered_facts.unshift *updated_facts
 
         # trigger the posted rule
         trigger posted_rule
@@ -306,8 +335,12 @@ module PKT
 
       # start the matching of the ruleby engine if not yet called
       unless @engine_has_matched
-        @engine.match
-        @engine_has_matched = true
+
+        # TODO: should match the engine / all possible rules instead of raise error
+        raise "Knowledge base hasn't been updated"
+
+        #@engine.match
+        #@engine_has_matched = true
       end
 
       # return the result array
@@ -354,15 +387,15 @@ module PKT
       @triggered_rules.each do |rule|
 
         # create a new hash
-        hash  = {:name => rule.name, :facts => []}
+        hash  = {:name => rule.name, :facts => {}}
 
-        # get the facts added by the rule
-        facts = rule.facts
+        # get the facts answered by the rule
+        facts = rule.answered_facts
 
         # iterate all the facts
         facts.each do |fact|
 
-          hash[:facts] << {:name => fact.name, :value => fact.value}
+          hash[:facts][fact.name] = fact.value
 
         end
 
@@ -395,21 +428,32 @@ module PKT
       array.each do |hash|
 
         # get the rule back
-        rule  = retrieve_rule hash['name']
+        rule          = retrieve_rule hash['name']
 
-        # create a new facts array
-        facts = []
+        # update the rule
+        updated_facts = rule.update_from_params hash['facts']
 
-        # retrieve each of the facts
-        hash['facts'].each do |fact|
+        # update the answered facts already on the rule, the facts defined outside a question
+        rule.answered_facts.each do |fact|
 
-          # create a new fact for each
-          facts << create_fact(fact['name'], fact['value'])
+          # check if the posted hash has the fact in the answered rule
+          if hash['facts'].has_key? fact.name
+
+            # update the fact with the value
+            fact.value = hash['facts'][fact.name]
+
+          else
+
+            # trigger error when the fact doesn't exist on the rule
+            raise "Fact with name '#{fact.name}' should have been posted, but doesn't exist."
+
+          end
 
         end
 
-        # replace the facts on the rule
-        rule.facts = facts
+        # add the facts to the rule, order doesn't matter because they all don't have facts in them anymore
+        # TODO: because of class caching, answered facts get duplicated here. Think of a way the reset method can help
+        rule.answered_facts.push *updated_facts
 
         # add to the array
         rules << rule
@@ -418,13 +462,6 @@ module PKT
 
       # return the rules array
       rules
-
-    end
-
-    # method for creating facts
-    def create_fact(name, value)
-
-      Fact.new name, convert_variable(value)
 
     end
 
@@ -452,26 +489,6 @@ module PKT
 
     end
 
-    # get the facts posted
-    def facts_from_params(params)
-
-      facts = []
-
-      params.each do |name, value|
-
-        if is_fact? name
-
-          facts << create_fact(name, value)
-
-        end
-
-      end
-
-      # return facts
-      facts
-
-    end
-
     # gets called when the conditions of a rule match
     def rule_handler(rule_object)
 
@@ -481,13 +498,13 @@ module PKT
         case
 
           # when there are no questions and no goals
-          when rule_object.questions.empty? && rule_object.goal.nil?
+          when rule_object.questions.empty? && rule_object.result.nil?
 
             # trigger the rule, thus asserting facts and storing in triggered rules
             trigger rule_object
 
           # when the goal is NOT nil
-          when !rule_object.goal.nil?
+          when !rule_object.result.nil?
 
             # add to the result rules
             @result_rules << rule_object
@@ -504,28 +521,10 @@ module PKT
 
     end
 
-    # assert all the facts stored in a rule
-    def assert_facts_from_rule(rule_object)
-
-      # get the facts from the rule
-      facts = rule_object.facts
-
-      # iterate all the facts
-      facts.each do |fact|
-
-        # evaluate fact value
-        # TODO: ONLY evaluate fact when trigger is called on a top level rule fact
-        fact.value = evaluate_fact_value fact.value
-
-        # let the ruleby engine assert the fact
-        @engine.assert fact
-
-      end
-
-    end
-
     # evaluates the value of the fact
-    def evaluate_fact_value(value)
+    def convert_fact_value(value)
+
+      # TODO: check if contains only numbers -> convert to Integer or Float or Fixnum?
 
       # only when the type of the value is a string
       if value.is_a? String
@@ -562,6 +561,26 @@ module PKT
 
         # add the rule to the triggered rules
         @triggered_rules << rule_object
+
+      end
+
+    end
+
+    # assert all the facts stored in a rule
+    def assert_facts_from_rule(rule_object)
+
+      # get the facts from the rule
+      facts = rule_object.answered_facts
+
+      # iterate all the facts
+      facts.each do |fact|
+
+        # TODO: also convert string to int etc here!!!
+        # tha value gets updated here, so needs to be reset
+        fact.value = convert_fact_value fact.value
+
+        # let the ruleby engine assert the fact
+        @engine.assert fact
 
       end
 
