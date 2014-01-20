@@ -35,13 +35,13 @@ rule2:
 result1:
 
   all:
-    - equals($calc1, 1)
+    - equals($calc2, 1)
 
   result: "Is 1"
 
 result2:
 
   all:
-    - equals($calc1, 2)
+    - equals($calc2, 2)
 
   result: "Is 2"

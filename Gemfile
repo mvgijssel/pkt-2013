@@ -31,7 +31,7 @@ gem 'jbuilder', '~> 1.2'
 gem 'foundation-rails', '>= 5.0.3.0'
 
 # ruleby rule engine
-gem 'ruleby'
+gem 'ruleby', '0.9.b7'
 
 group :doc do
   # bundle exec rake doc:rails generates the API under doc/api.
