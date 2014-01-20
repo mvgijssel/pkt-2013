@@ -4,6 +4,7 @@ class PagesController < ApplicationController
 
     # load the development files
     load "#{Rails.root}/lib/pkt_development.rb" if Rails.env.development?
+    load "#{Rails.root}/lib/pkt_production.rb" if Rails.env.production?
 
     # get a knowledge base with specified label
     k = knowledge_base :pkt

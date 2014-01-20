@@ -1,20 +1,20 @@
-require 'pkt/resettable'
-require 'pkt/knowledge_base'
-require 'pkt/rule_parser'
+#load 'pkt/resettable.rb'
+load 'pkt/knowledge_base.rb'
+load 'pkt/rule_parser.rb'
 
-require 'pkt/answer'
-require 'pkt/answer/checkbox'
-require 'pkt/answer/radio'
-require 'pkt/answer/text'
+load 'pkt/answer.rb'
+load 'pkt/answer/checkbox.rb'
+load 'pkt/answer/radio.rb'
+load 'pkt/answer/text.rb'
 
-require 'pkt/additions/controller'
-require 'pkt/additions/model'
-require 'pkt/additions/view'
+load 'pkt/additions/controller.rb'
+load 'pkt/additions/model.rb'
+load 'pkt/additions/view.rb'
 
-require 'pkt/question'
-require 'pkt/fact'
-require 'pkt/matcher'
-require 'pkt/rule'
+load 'pkt/question.rb'
+load 'pkt/fact.rb'
+load 'pkt/matcher.rb'
+load 'pkt/rule.rb'
 
 # the configuration of the knowledge base
 PKT::KnowledgeBase.setup :pkt do |config|
@@ -28,10 +28,9 @@ PKT::KnowledgeBase.setup :pkt do |config|
 end
 
 # capture the states of all resettable objects
-
-
-if Rails.application.config.cache_classes
-
-  PKT::Resettable.capture
-
-end
+#
+#if Rails.application.config.cache_classes
+#
+#  PKT::Resettable.capture
+#
+#end

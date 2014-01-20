@@ -2,7 +2,7 @@ module PKT
 
   class Fact
 
-    include Resettable
+    #include Resettable
 
     attr_accessor :name, :label, :value
 

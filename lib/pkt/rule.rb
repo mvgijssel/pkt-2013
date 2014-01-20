@@ -6,7 +6,7 @@ module PKT
 
   class Rule
 
-    include Resettable
+    #include Resettable
 
     attr_accessor :name, :questions, :result, :answered_facts
 
