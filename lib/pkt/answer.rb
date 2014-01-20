@@ -47,7 +47,27 @@ module PKT
 
             when fact.value.nil? && fact.possible_values.count > 0
 
-              # TODO: check the value against the possible values
+              match = false
+
+              fact.possible_values.each do |possible_value|
+
+                # convert to string, because posted is string
+                if possible_value[:value].to_s == fact_value.to_s
+
+                  match = true
+                  fact.value = fact_value
+                  fact.label = possible_value[:label]
+
+                end
+
+              end
+
+              unless match
+
+                raise ArgumentError, "The value '#{fact_value}' isn't a valid input for question '#{question.content}''"
+
+              end
+
               fact.value = fact_value
 
             else

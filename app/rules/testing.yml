@@ -9,6 +9,12 @@ rule0:
   "Shine":
     text: $shine
 
+  "Kerk":
+    checkbox:
+      $foo: Foo
+      $bar: Bar
+      $baz: Baz
+
   $calc1: 1
 
 rule1:

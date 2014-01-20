@@ -36,7 +36,15 @@
 
                   <% question.answer.facts.each do |fact_name, fact| %>
 
-                    <li><%= "#{fact.name}: #{fact.value}" %></li>
+                      <% if fact.label.nil? %>
+
+                          <li><%= "#{fact.value}" %></li>
+
+                      <% else %>
+
+                          <li><%= "#{fact.label}: #{fact.value}" %></li>
+
+                      <% end %>
 
                   <% end %>
 
