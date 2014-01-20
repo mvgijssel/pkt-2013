@@ -19,10 +19,10 @@ rule2:
     - equals($situation, 1)
     - equals($situation, 3)
 
-  "Wat is de verwachte afzet voor het aankomende dagdeel (milj kuub/uur)":
+  "Wat is de verwachte afzet voor het aankomende dagdeel (x1000 kuub/uur)":
     text: $afzet
 
-  "Wat was de gerealiseerde afzet gisteren(milj kuub/uur)?":
+  "Wat was de gerealiseerde afzet gisteren (x1000 kuub/uur)?":
     text: $historie
   
   "Wat is het voor dag vandaag":
@@ -70,7 +70,7 @@ rule6:
     - equals($situation, 1)
     - equals($prognoseBepaald, 1)
 
-  "Wat is de huidige druk (bar)?":
+  "Wat is de huidige druk (bar) op Abbenbroek?":
     text: $druk
 
   "Wat voor middagpiek wordt er verwacht?":
@@ -79,10 +79,10 @@ rule6:
         0: Korte
         1: Lange
 
-  "Wat is de effectieve temp (graden Celcius)":
+  "Wat is de effectieve temp (graden Celcius, onder 0 = 0)":
     text: $temp
 
-  "Wat was de effectieve temp gisteren (graden Celcius)?":
+  "Wat was de effectieve temp gisteren (graden Celcius, onder 0 = 0?)":
     text: $tempHist
 
   "Komt er een significante hoeveelheid h-gas binnen bij Wieringermeer?":
@@ -98,7 +98,7 @@ rule7:
     - less($tempHist, $temp)
     - equals($questions, 1)
 
-  $factor: 0.9*($tempHist-$temp)
+  $factor: ((0.9*($tempHist-$temp)**2)**0.5)
   $prognose: $prognose * $factor
   $rules: 1
 
@@ -106,7 +106,8 @@ rule17:
   all:
     - less($temp, 16)
     - equals($questions, 1)
-  $factor: 0.9*($tempHist-$temp)
+
+  $factor: ((0.9*($tempHist-$temp)**2)**0.5)
   $prognose: $prognose * $factor
   $rules: 1
 
@@ -114,16 +115,17 @@ rule17:
 #results situatie 1
 result1:
   all:
-    - equals($rules, 1)
     - equals($situation, 1)
-    - less($prognose, 2)
+    - equals($rules, 1)
+    - less($prognose, 2000)
 
   result: "Geen compressie nodig op dit moment."
 
 result2:
   all:
-    - equals($rules, 1)
     - equals($situation, 1)
+    - equals($rules, 1)
+    - greater($prognose, 2000)
     - equals($middagPiek, 0)
 
   result: "Geen compressie nodig op dit moment."
@@ -132,14 +134,21 @@ result3:
   all:
     - equals($rules, 1)
     - equals($situation, 1)
+    - greater($prognose, 2000)
     - equals($middagPiek, 1)
+    - equals($hgas, 0)
+    - greater($druk,53)
+
   result: "Zet Oldenboorn aan"
 
 result4:
   all:
+    - equals($rules, 1)
     - equals($situation, 1)
+    - greater($prognose, 2000)
     - equals($middagPiek, 1)
     - equals($hgas, 1)
+    - greater($druk,53)
 
   result: "Zet Wieringermeer aan"
 
@@ -147,8 +156,10 @@ result5:
   all:
     - equals($rules, 1)
     - equals($situation, 1)
-    - less($druk, 53)
+    - greater($prognose, 2000)
+    - equals($middagPiek, 1)
     - equals($hgas, 0)
+    - less($druk, 53)
 
   result: "Zet Oldenboorn aan"
 
@@ -156,14 +167,22 @@ result6:
   all:
     - equals($rules, 1)
     - equals($situation, 1)
-    - less($druk, 53)
+    - greater($prognose, 2000)
     - equals($hgas, 1)
+    - less($druk, 53)
 
   result: "Zet Wieringermeer aan"
+
 # Vragen situatie 2
 rule8:
   all:
     - equals($situation, 2)
+
+  "Verwacht je dat compressie nodig gaat zijn?":
+    radio:
+      $compNodig:
+        0: Nee
+        1: Ja
 
   "Voert Alkmaar op dit moment een significante hoeveelheid gas in?":
     radio:
@@ -171,11 +190,6 @@ rule8:
         0: Nee
         1: Ja
 
-  "Verwacht je dat compressie nodig gaat zijn?":
-    radio:
-      $compNodig:
-        0: Nee
-        1: Ja
 rule9:
   all:
     - equals($compNodig, 1)
@@ -227,7 +241,7 @@ rule10:
     - equals($situation, 3)
     - equals($prognoseBepaald, 1)
 
-  "Met hoeveel graden gaat de effectieve temperatuur dalen vanmiddag/vanavond??":
+  "Met hoeveel graden gaat de effectieve temperatuur dalen vanmiddag/vanavond (geen daling = 0)?":
     text: $drop
 
   $questions: 1
@@ -241,6 +255,20 @@ rule11:
 
   $factor: drop/3
   $prognose: $prognose * 1.2 * $factor
+  $rules: 1
+
+rule20:
+  all:
+    - equals($situation, 3)
+    - equals($questions, 1)
+    - less($drop, 3)
+  $rules: 1
+
+rule21:
+  all:
+    - equals($situation, 3)
+    - equals($questions, 1)
+    - equals($drop, 3)
   $rules: 1
 
 # Regels situatie 3 (verdere vragen)
@@ -264,14 +292,25 @@ result10:
   all:
     - equals($situation, 3)
     - equals($rules, 1)
-    - less($prognose, 2)
+    - less($prognose, 2000)
+    - greater($drukAbb, 49)
 
   result: "Geen compressie nodig op dit moment."
 
-result21:
+result28:
   all:
     - equals($situation, 3)
     - equals($rules, 1)
+    - less($prognose, 2000)
+    - less($drukAbb, 49)
+
+  result: "Geen compressie nodig op dit moment."
+
+result29:
+  all:
+    - equals($situation, 3)
+    - equals($rules, 1)
+    - greater($prognose, 2000)
     - greater($drukAbb, 49)
 
   result: "Geen compressie nodig op dit moment."
@@ -280,7 +319,7 @@ result11:
   all:
     - equals($situation, 3)
     - equals($rules, 1)
-    - greater($prognose, 2)
+    - greater($prognose, 2000)
     - less($drukAbb, 49)
     - equals($Old, 1)
 
@@ -290,16 +329,16 @@ result12:
   all:
     - equals($situation, 3)
     - equals($rules, 1)
-    - greater($prognose, 2)
+    - greater($prognose, 2000)
     - less($drukAbb, 49)
     - equals($Old, 0)
 
   result: "Zet Oldenboorn aan." 
 
 # Vragen situatie 4
-rule13:
+rule19:
   all:
-    - equals($situatie, 4)
+    - equals($situation, 4)
 
   "Is er genoeg buffer om de komende 4 uur zonder compressie te draaien?":
     radio:
@@ -377,13 +416,33 @@ result16:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
+    - equals($Old, 0)
+    - equals($Wie, 0)
+    - equals($Bev, 0)
+
+  result: "Zet Wieringermeer aan."
+
+result22:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
     - equals($Old, 1)
     - equals($Wie, 0)
     - equals($Bev, 0)
 
   result: "Zet Oldenboorn uit en Wieringermeer aan."
 
-result17:
+result23:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
+    - equals($Old, 0)
+    - equals($Wie, 1)
+    - equals($Bev, 0)
+
+  result: "Zet Oldenboorn aan."
+
+result27:
   all:
     - equals($situation, 5)
     - equals($alkSudden, 1)
@@ -391,7 +450,47 @@ result17:
     - equals($Wie, 0)
     - equals($Bev, 1)
 
-  result: "Zet Beverwijk uit en Wieringermeer aan."
+  result: "Zet Wieringermeer aan."
+
+result24:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
+    - equals($Old, 1)
+    - equals($Wie, 1)
+    - equals($Bev, 0)
+
+  result: "Behoudt de huidige compressie"
+
+result25:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
+    - equals($Old, 0)
+    - equals($Wie, 1)
+    - equals($Bev, 1)
+
+  result: "Behoudt de huidige compressie"
+
+result26:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
+    - equals($Old, 1)
+    - equals($Wie, 0)
+    - equals($Bev, 1)
+
+  result: "Zet Oldenboorn uit en Wieringermeer aan."
+
+result17:
+  all:
+    - equals($situation, 5)
+    - equals($alkSudden, 1)
+    - equals($Old, 1)
+    - equals($Wie, 1)
+    - equals($Bev, 1)
+
+  result: "Behoudt de huidige compressie"
 
 result18:
   all:
