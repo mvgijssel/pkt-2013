@@ -16,8 +16,14 @@ module PKT
       # overrides the module validation
       def validate(content)
 
-        # return if content contains only numbers
-        content =~ /^[0-9]+$/
+        case
+          when content.is_a?(Numeric)
+            true
+          when content.is_a?(String)
+            content =~ /^[0-9]+$/
+          else
+            raise "Unknown class '#{content.class}' of content '#{content.inspect}'"
+        end
 
       end
 
